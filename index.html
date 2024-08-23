@@ -108,18 +108,21 @@
             for (let obstacle of obstacles) {
                 const obstacleRect = obstacle.getBoundingClientRect();
 
+                // Check collision
                 if (
                     cubeRect.left < obstacleRect.right &&
                     cubeRect.right > obstacleRect.left &&
-                    cubeRect.bottom > obstacleRect.top &&
-                    cubeRect.top < obstacleRect.bottom
+                    cubeRect.bottom > obstacleRect.top
                 ) {
                     alert('Game Over! Your score: ' + score);
                     location.reload(); // Restart the game
                 }
 
-                // Check if the cube successfully jumped over the obstacle
-                if (obstacleRect.right < cubeRect.left && obstacle !== lastObstaclePassed) {
+                // Check if the obstacle was successfully jumped over
+                if (
+                    obstacleRect.right < cubeRect.left && 
+                    obstacle !== lastObstaclePassed
+                ) {
                     lastObstaclePassed = obstacle;
                     updateScore();
                 }
