@@ -194,6 +194,7 @@
         function updateScore() {
             score++;
             scoreElement.textContent = 'Score: ' + score;
+            localStorage.setItem('score', score); // Save score to local storage
         }
 
         function createObstacle() {
