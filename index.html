@@ -66,7 +66,6 @@
 <body>
     <div id="gameContainer">
         <div id="cube"></div>
-        <div class="obstacle"></div>
         <div id="score">Score: 0</div>
     </div>
 
@@ -77,6 +76,9 @@
         let score = 0;
         let isJumping = false;
         let isLanded = true;
+
+        // Track obstacles and score when passed
+        let passedObstacles = [];
 
         // Handle jump with keyboard or touch
         document.addEventListener('keydown', (e) => {
@@ -123,6 +125,12 @@
                     alert('Game Over! Your score: ' + score);
                     location.reload(); // Restart the game
                 }
+
+                // Check if the obstacle was successfully passed
+                if (!passedObstacles.includes(obstacle) && obstacleRect.right < cubeRect.left) {
+                    passedObstacles.push(obstacle);
+                    updateScore();
+                }
             }
         }
 
@@ -139,12 +147,13 @@
             // Remove the obstacle after it moves off-screen
             setTimeout(() => {
                 gameContainer.removeChild(obstacle);
+                // Remove the obstacle from the passedObstacles array
+                passedObstacles = passedObstacles.filter(obs => obs !== obstacle);
             }, 3000);
         }
 
         setInterval(createObstacle, 2000);
         setInterval(checkCollision, 10);
-        setInterval(updateScore, 1000);
     </script>
 </body>
 </html>
