@@ -3,134 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jumping Cube Game</title>
+    <title>Clicker Game</title>
     <style>
         body {
-            margin: 0;
-            overflow: hidden;
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
         }
 
         #gameContainer {
-            position: relative;
-            width: 100%;
-            max-width: 600px;
-            height: 200px;
-            border: 2px solid #333;
+            text-align: center;
             background-color: #fff;
-            overflow: hidden;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
         }
 
-        #cube {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            width: 40px;
-            height: 40px;
-            background-color: #3498db;
-            transition: bottom 0.3s ease;
+        #coinCount {
+            font-size: 24px;
+            margin-bottom: 20px;
         }
 
-        .obstacle {
-            position: absolute;
-            bottom: 20px;
-            width: 20px;
-            height: 40px;
-            background-color: #e74c3c;
-            animation: moveObstacle 3s linear infinite;
+        #clickButton {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
         }
 
-        @keyframes moveObstacle {
-            from {
-                right: -20px;
-            }
-            to {
-                right: 100%;
-            }
+        .upgrade {
+            margin-top: 10px;
         }
 
-        #score {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 20px;
-            color: #333;
+        .upgrade button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .upgrade span {
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <div id="cube"></div>
-        <div class="obstacle"></div>
-        <div id="score">Score: 0</div>
+        <h1>Clicker Game</h1>
+        <div id="coinCount">Монеты: 0</div>
+        <button id="clickButton">Кликни меня!</button>
+
+        <div class="upgrade">
+            <span>Улучшение 1 ( +1 монета за клик ) — 10 монет</span>
+            <button onclick="buyUpgrade(10, 1)">Купить</button>
+        </div>
+        <div class="upgrade">
+            <span>Улучшение 2 ( +5 монет за клик ) — 50 монет</span>
+            <button onclick="buyUpgrade(50, 5)">Купить</button>
+        </div>
     </div>
 
     <script>
-        const cube = document.getElementById('cube');
-        const gameContainer = document.getElementById('gameContainer');
-        const scoreElement = document.getElementById('score');
-        let score = 0;
-        let isJumping = false;
+        let coins = 0;
+        let coinsPerClick = 1;
 
-        document.addEventListener('keydown', jump);
+        const coinCountElement = document.getElementById('coinCount');
+        const clickButton = document.getElementById('clickButton');
 
-        function jump() {
-            if (isJumping) return;
-            isJumping = true;
-            let jumpHeight = 80;
-
-            // Jump up
-            cube.style.bottom = `${jumpHeight + 20}px`;
-
-            setTimeout(() => {
-                // Come back down
-                cube.style.bottom = '20px';
-                isJumping = false;
-            }, 300);
+        // Обновление количества монет
+        function updateCoinCount() {
+            coinCountElement.textContent = 'Монеты: ' + coins;
         }
 
-        function checkCollision() {
-            const cubeRect = cube.getBoundingClientRect();
-            const obstacles = document.getElementsByClassName('obstacle');
+        // Добавление монет за клик
+        clickButton.addEventListener('click', () => {
+            coins += coinsPerClick;
+            updateCoinCount();
+        });
 
-            for (let obstacle of obstacles) {
-                const obstacleRect = obstacle.getBoundingClientRect();
-
-                if (
-                    cubeRect.left < obstacleRect.right &&
-                    cubeRect.right > obstacleRect.left &&
-                    cubeRect.bottom > obstacleRect.top
-                ) {
-                    alert('Game Over! Your score: ' + score);
-                    location.reload(); // Restart the game
-                }
+        // Покупка улучшений
+        function buyUpgrade(cost, additionalCoinsPerClick) {
+            if (coins >= cost) {
+                coins -= cost;
+                coinsPerClick += additionalCoinsPerClick;
+                updateCoinCount();
+            } else {
+                alert('Недостаточно монет для покупки улучшения!');
             }
         }
-
-        function updateScore() {
-            score++;
-            scoreElement.textContent = 'Score: ' + score;
-        }
-
-        function createObstacle() {
-            const obstacle = document.createElement('div');
-            obstacle.className = 'obstacle';
-            gameContainer.appendChild(obstacle);
-
-            // Remove the obstacle after it moves off-screen
-            setTimeout(() => {
-                gameContainer.removeChild(obstacle);
-            }, 3000);
-        }
-
-        setInterval(createObstacle, 2000);
-        setInterval(checkCollision, 10);
-        setInterval(updateScore, 1000);
     </script>
 </body>
 </html>
