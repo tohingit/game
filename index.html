@@ -20,7 +20,7 @@
             position: relative;
             width: 100%;
             max-width: 600px;
-            height: 100vh;
+            height: 300px;
             border: 2px solid #333;
             background-color: #fff;
             overflow: hidden;
@@ -28,21 +28,23 @@
 
         #cube {
             position: absolute;
-            bottom: 20px;
+            bottom: 50%;
             left: 20px;
             width: 40px;
             height: 40px;
             background-color: #3498db;
+            transform: translateY(50%);
             transition: bottom 0.3s ease;
         }
 
         .obstacle {
             position: absolute;
-            bottom: 20px;
+            bottom: 50%;
             width: 20px;
             height: 40px;
             background-color: #e74c3c;
             animation: moveObstacle 3s linear infinite;
+            transform: translateY(50%);
         }
 
         @keyframes moveObstacle {
@@ -66,7 +68,6 @@
 <body>
     <div id="gameContainer">
         <div id="cube"></div>
-        <div class="obstacle"></div>
         <div id="score">Score: 0</div>
     </div>
 
@@ -76,15 +77,9 @@
         const scoreElement = document.getElementById('score');
         let score = 0;
         let isJumping = false;
+        let lastObstaclePassed = null;
 
-        // Handle jump with keyboard or touch
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                jump();
-            }
-        });
-
-        document.addEventListener('touchstart', jump);
+        document.addEventListener('keydown', jump);
 
         function jump() {
             if (isJumping) return;
@@ -92,11 +87,11 @@
             let jumpHeight = 80;
 
             // Jump up
-            cube.style.bottom = `${jumpHeight + 20}px`;
+            cube.style.bottom = `${jumpHeight + 50}%`;
 
             setTimeout(() => {
                 // Come back down
-                cube.style.bottom = '20px';
+                cube.style.bottom = '50%';
                 isJumping = false;
             }, 300);
         }
@@ -108,20 +103,27 @@
             for (let obstacle of obstacles) {
                 const obstacleRect = obstacle.getBoundingClientRect();
 
+                // Check collision
                 if (
                     cubeRect.left < obstacleRect.right &&
                     cubeRect.right > obstacleRect.left &&
-                    cubeRect.bottom > obstacleRect.top
+                    cubeRect.bottom > obstacleRect.top &&
+                    cubeRect.top < obstacleRect.bottom
                 ) {
                     alert('Game Over! Your score: ' + score);
                     location.reload(); // Restart the game
                 }
-            }
-        }
 
-        function updateScore() {
-            score++;
-            scoreElement.textContent = 'Score: ' + score;
+                // Check if obstacle was successfully jumped over
+                if (
+                    obstacleRect.right < cubeRect.left && 
+                    obstacle !== lastObstaclePassed
+                ) {
+                    lastObstaclePassed = obstacle;
+                    score++;
+                    scoreElement.textContent = 'Score: ' + score;
+                }
+            }
         }
 
         function createObstacle() {
@@ -137,7 +139,6 @@
 
         setInterval(createObstacle, 2000);
         setInterval(checkCollision, 10);
-        setInterval(updateScore, 1000);
     </script>
 </body>
 </html>
