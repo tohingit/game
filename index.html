@@ -42,7 +42,7 @@
             width: 20px;
             height: 40px;
             background-color: #e74c3c;
-            animation: moveObstacle 3s linear infinite;
+            animation: moveObstacle linear infinite;
         }
 
         @keyframes moveObstacle {
@@ -61,33 +61,99 @@
             font-size: 20px;
             color: #333;
         }
+
+        #levelContainer {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            color: #333;
+        }
+
+        button {
+            font-size: 16px;
+            margin: 5px;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        #loginButton {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 16px;
+            padding: 10px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <div id="cube"></div>
         <div id="score">Score: 0</div>
+        <div id="levelContainer">
+            <button onclick="setDifficulty('easy')">Easy</button>
+            <button onclick="setDifficulty('medium')">Medium</button>
+            <button onclick="setDifficulty('hard')">Hard</button>
+        </div>
+        <button id="loginButton" onclick="login()">Login with Telegram</button>
     </div>
 
     <script>
         const cube = document.getElementById('cube');
         const gameContainer = document.getElementById('gameContainer');
         const scoreElement = document.getElementById('score');
+        const loginButton = document.getElementById('loginButton');
         let score = 0;
         let isJumping = false;
         let isLanded = true;
+        let difficulty = 'medium';
+        let obstacleSpeed = { easy: 4, medium: 3, hard: 2 };
+        let obstacleInterval = { easy: 2500, medium: 2000, hard: 1500 };
+        let obstacleCreationInterval;
 
-        // Track obstacles and score when passed
-        let passedObstacles = [];
+        // Initialize game
+        function initGame() {
+            const storedScore = localStorage.getItem('score');
+            const storedDifficulty = localStorage.getItem('difficulty');
+            const username = localStorage.getItem('username');
 
-        // Handle jump with keyboard or touch
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                jump();
+            if (storedScore) {
+                score = parseInt(storedScore, 10);
+                scoreElement.textContent = 'Score: ' + score;
             }
-        });
 
-        document.addEventListener('touchstart', jump);
+            if (storedDifficulty) {
+                difficulty = storedDifficulty;
+                updateDifficulty();
+            }
+
+            if (username) {
+                loginButton.style.display = 'none';
+            }
+        }
+
+        function setDifficulty(level) {
+            difficulty = level;
+            localStorage.setItem('difficulty', level);
+            updateDifficulty();
+        }
+
+        function updateDifficulty() {
+            const speed = obstacleSpeed[difficulty];
+            const interval = obstacleInterval[difficulty];
+            
+            // Adjust the speed of obstacle movement
+            document.styleSheets[0].insertRule(`
+                .obstacle {
+                    animation: moveObstacle ${speed}s linear infinite;
+                }
+            `, 0);
+
+            // Adjust the interval for obstacle creation
+            clearInterval(obstacleCreationInterval);
+            obstacleCreationInterval = setInterval(createObstacle, interval);
+        }
 
         function jump() {
             if (isJumping || !isLanded) return;
@@ -95,18 +161,14 @@
             isLanded = false;
             let jumpHeight = 80;
 
-            // Jump up
             cube.style.bottom = `${jumpHeight + 20}px`;
 
             setTimeout(() => {
-                // Come back down
                 cube.style.bottom = '20px';
-
-                // Allow jumping again after landing
                 setTimeout(() => {
                     isJumping = false;
                     isLanded = true;
-                }, 300); // Ensure landing before enabling another jump
+                }, 300);
             }, 300);
         }
 
@@ -123,13 +185,8 @@
                     cubeRect.bottom > obstacleRect.top
                 ) {
                     alert('Game Over! Your score: ' + score);
+                    localStorage.setItem('score', score); // Save score to local storage
                     location.reload(); // Restart the game
-                }
-
-                // Check if the obstacle was successfully passed
-                if (!passedObstacles.includes(obstacle) && obstacleRect.right < cubeRect.left) {
-                    passedObstacles.push(obstacle);
-                    updateScore();
                 }
             }
         }
@@ -144,16 +201,27 @@
             obstacle.className = 'obstacle';
             gameContainer.appendChild(obstacle);
 
-            // Remove the obstacle after it moves off-screen
             setTimeout(() => {
                 gameContainer.removeChild(obstacle);
-                // Remove the obstacle from the passedObstacles array
-                passedObstacles = passedObstacles.filter(obs => obs !== obstacle);
-            }, 3000);
+            }, obstacleInterval[difficulty] + 500); // Adjusted for obstacle movement
         }
 
-        setInterval(createObstacle, 1500);
-        setInterval(checkCollision, 10);
+        function login() {
+            const botToken = 'YOUR_BOT_TOKEN'; // Replace with your bot token
+            const redirectUri = encodeURIComponent(window.location.href);
+            const authUrl = `https://t.me/share/url?url=${redirectUri}&text=Login%20with%20Telegram`;
+            window.location.href = authUrl;
+        }
+
+        window.onload = initGame;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                jump();
+            }
+        });
+
+        document.addEventListener('touchstart', jump);
     </script>
 </body>
 </html>
