@@ -76,15 +76,6 @@
             padding: 10px;
             cursor: pointer;
         }
-
-        #loginButton {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 16px;
-            padding: 10px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
@@ -96,46 +87,32 @@
             <button onclick="setDifficulty('medium')">Medium</button>
             <button onclick="setDifficulty('hard')">Hard</button>
         </div>
-        <button id="loginButton" onclick="login()">Login with Telegram</button>
     </div>
 
     <script>
         const cube = document.getElementById('cube');
         const gameContainer = document.getElementById('gameContainer');
         const scoreElement = document.getElementById('score');
-        const loginButton = document.getElementById('loginButton');
+        const obstacleAnimation = document.styleSheets[0].insertRule(`
+            @keyframes moveObstacle {
+                from {
+                    right: -20px;
+                }
+                to {
+                    right: 100%;
+                }
+            }
+        `, 0);
+
         let score = 0;
         let isJumping = false;
         let isLanded = true;
         let difficulty = 'medium';
         let obstacleSpeed = { easy: 4, medium: 3, hard: 2 };
         let obstacleInterval = { easy: 2500, medium: 2000, hard: 1500 };
-        let obstacleCreationInterval;
-
-        // Initialize game
-        function initGame() {
-            const storedScore = localStorage.getItem('score');
-            const storedDifficulty = localStorage.getItem('difficulty');
-            const username = localStorage.getItem('username');
-
-            if (storedScore) {
-                score = parseInt(storedScore, 10);
-                scoreElement.textContent = 'Score: ' + score;
-            }
-
-            if (storedDifficulty) {
-                difficulty = storedDifficulty;
-                updateDifficulty();
-            }
-
-            if (username) {
-                loginButton.style.display = 'none';
-            }
-        }
 
         function setDifficulty(level) {
             difficulty = level;
-            localStorage.setItem('difficulty', level);
             updateDifficulty();
         }
 
@@ -185,7 +162,6 @@
                     cubeRect.bottom > obstacleRect.top
                 ) {
                     alert('Game Over! Your score: ' + score);
-                    localStorage.setItem('score', score); // Save score to local storage
                     location.reload(); // Restart the game
                 }
             }
@@ -194,7 +170,6 @@
         function updateScore() {
             score++;
             scoreElement.textContent = 'Score: ' + score;
-            localStorage.setItem('score', score); // Save score to local storage
         }
 
         function createObstacle() {
@@ -207,14 +182,9 @@
             }, obstacleInterval[difficulty] + 500); // Adjusted for obstacle movement
         }
 
-        function login() {
-            const botToken = 'YOUR_BOT_TOKEN'; // Replace with your bot token
-            const redirectUri = encodeURIComponent(window.location.href);
-            const authUrl = `https://t.me/share/url?url=${redirectUri}&text=Login%20with%20Telegram`;
-            window.location.href = authUrl;
-        }
-
-        window.onload = initGame;
+        let obstacleCreationInterval = setInterval(createObstacle, obstacleInterval[difficulty]);
+        setInterval(checkCollision, 10);
+        setInterval(updateScore, 1000);
 
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
