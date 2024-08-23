@@ -66,6 +66,7 @@
 <body>
     <div id="gameContainer">
         <div id="cube"></div>
+        <div class="obstacle"></div>
         <div id="score">Score: 0</div>
     </div>
 
@@ -75,7 +76,7 @@
         const scoreElement = document.getElementById('score');
         let score = 0;
         let isJumping = false;
-        let lastObstaclePassed = null;
+        let isLanded = true;
 
         // Handle jump with keyboard or touch
         document.addEventListener('keydown', (e) => {
@@ -87,8 +88,9 @@
         document.addEventListener('touchstart', jump);
 
         function jump() {
-            if (isJumping) return;
+            if (isJumping || !isLanded) return;
             isJumping = true;
+            isLanded = false;
             let jumpHeight = 80;
 
             // Jump up
@@ -97,7 +99,12 @@
             setTimeout(() => {
                 // Come back down
                 cube.style.bottom = '20px';
-                isJumping = false;
+
+                // Allow jumping again after landing
+                setTimeout(() => {
+                    isJumping = false;
+                    isLanded = true;
+                }, 300); // Ensure landing before enabling another jump
             }, 300);
         }
 
@@ -108,7 +115,6 @@
             for (let obstacle of obstacles) {
                 const obstacleRect = obstacle.getBoundingClientRect();
 
-                // Check collision
                 if (
                     cubeRect.left < obstacleRect.right &&
                     cubeRect.right > obstacleRect.left &&
@@ -116,15 +122,6 @@
                 ) {
                     alert('Game Over! Your score: ' + score);
                     location.reload(); // Restart the game
-                }
-
-                // Check if the obstacle was successfully jumped over
-                if (
-                    obstacleRect.right < cubeRect.left && 
-                    obstacle !== lastObstaclePassed
-                ) {
-                    lastObstaclePassed = obstacle;
-                    updateScore();
                 }
             }
         }
@@ -147,6 +144,7 @@
 
         setInterval(createObstacle, 2000);
         setInterval(checkCollision, 10);
+        setInterval(updateScore, 1000);
     </script>
 </body>
 </html>
