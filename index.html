@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jumping Cube Game</title>
+    <title>Step Counter Game</title>
     <style>
         body {
             margin: 0;
@@ -24,175 +24,54 @@
             border: 2px solid #333;
             background-color: #fff;
             overflow: hidden;
-        }
-
-        #cube {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            width: 35px;
-            height: 40px;
-            background-color: #3498db;
-            transition: bottom 0.3s ease;
-        }
-
-        .obstacle {
-            position: absolute;
-            bottom: 20px;
-            width: 20px;
-            height: 40px;
-            background-color: #e74c3c;
-            animation: moveObstacle linear infinite;
-        }
-
-        @keyframes moveObstacle {
-            from {
-                right: -20px;
-            }
-            to {
-                right: 100%;
-            }
-        }
-
-        #score {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
             color: #333;
         }
 
-        #levelContainer {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 20px;
-            color: #333;
-        }
-
-        button {
-            font-size: 16px;
-            margin: 5px;
-            padding: 10px;
-            cursor: pointer;
+        #stepCount {
+            font-size: 30px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <div id="cube"></div>
-        <div id="score">Score: 0</div>
-        <div id="levelContainer">
-            <button onclick="setDifficulty('easy')">Easy</button>
-            <button onclick="setDifficulty('medium')">Medium</button>
-            <button onclick="setDifficulty('hard')">Hard</button>
-        </div>
+        <div id="stepCount">Steps: 0</div>
     </div>
 
     <script>
-        const cube = document.getElementById('cube');
-        const gameContainer = document.getElementById('gameContainer');
-        const scoreElement = document.getElementById('score');
-        const obstacleAnimation = document.styleSheets[0].insertRule(`
-            @keyframes moveObstacle {
-                from {
-                    right: -20px;
+        let steps = 0;
+        let lastX, lastY, lastZ;
+        const threshold = 15; // Порог для определения шага
+        const stepCountElement = document.getElementById('stepCount');
+
+        if (window.DeviceMotionEvent) {
+            window.addEventListener('devicemotion', function(event) {
+                const x = event.accelerationIncludingGravity.x;
+                const y = event.accelerationIncludingGravity.y;
+                const z = event.accelerationIncludingGravity.z;
+
+                if (lastX !== null && lastY !== null && lastZ !== null) {
+                    const deltaX = Math.abs(lastX - x);
+                    const deltaY = Math.abs(lastY - y);
+                    const deltaZ = Math.abs(lastZ - z);
+
+                    if (deltaX > threshold || deltaY > threshold || deltaZ > threshold) {
+                        steps++;
+                        stepCountElement.innerText = `Steps: ${steps}`;
+                    }
                 }
-                to {
-                    right: 100%;
-                }
-            }
-        `, 0);
 
-        let score = 0;
-        let isJumping = false;
-        let isLanded = true;
-        let difficulty = 'medium';
-        let obstacleSpeed = { easy: 4, medium: 3, hard: 2 };
-        let obstacleInterval = { easy: 2500, medium: 2000, hard: 1500 };
-
-        function setDifficulty(level) {
-            difficulty = level;
-            updateDifficulty();
+                lastX = x;
+                lastY = y;
+                lastZ = z;
+            });
+        } else {
+            alert("DeviceMotionEvent is not supported on this device.");
         }
-
-        function updateDifficulty() {
-            const speed = obstacleSpeed[difficulty];
-            const interval = obstacleInterval[difficulty];
-            
-            // Adjust the speed of obstacle movement
-            document.styleSheets[0].insertRule(`
-                .obstacle {
-                    animation: moveObstacle ${speed}s linear infinite;
-                }
-            `, 0);
-
-            // Adjust the interval for obstacle creation
-            clearInterval(obstacleCreationInterval);
-            obstacleCreationInterval = setInterval(createObstacle, interval);
-        }
-
-        function jump() {
-            if (isJumping || !isLanded) return;
-            isJumping = true;
-            isLanded = false;
-            let jumpHeight = 80;
-
-            cube.style.bottom = `${jumpHeight + 20}px`;
-
-            setTimeout(() => {
-                cube.style.bottom = '20px';
-                setTimeout(() => {
-                    isJumping = false;
-                    isLanded = true;
-                }, 300);
-            }, 300);
-        }
-
-        function checkCollision() {
-            const cubeRect = cube.getBoundingClientRect();
-            const obstacles = document.getElementsByClassName('obstacle');
-
-            for (let obstacle of obstacles) {
-                const obstacleRect = obstacle.getBoundingClientRect();
-
-                if (
-                    cubeRect.left < obstacleRect.right &&
-                    cubeRect.right > obstacleRect.left &&
-                    cubeRect.bottom > obstacleRect.top
-                ) {
-                    alert('Game Over! Your score: ' + score);
-                    location.reload(); // Restart the game
-                }
-            }
-        }
-
-        function updateScore() {
-            score++;
-            scoreElement.textContent = 'Score: ' + score;
-        }
-
-        function createObstacle() {
-            const obstacle = document.createElement('div');
-            obstacle.className = 'obstacle';
-            gameContainer.appendChild(obstacle);
-
-            setTimeout(() => {
-                gameContainer.removeChild(obstacle);
-            }, obstacleInterval[difficulty] + 500); // Adjusted for obstacle movement
-        }
-
-        let obstacleCreationInterval = setInterval(createObstacle, obstacleInterval[difficulty]);
-        setInterval(checkCollision, 10);
-        setInterval(updateScore, 1000);
-
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                jump();
-            }
-        });
-
-        document.addEventListener('touchstart', jump);
     </script>
 </body>
 </html>
