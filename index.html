@@ -44,11 +44,11 @@
 
     <script>
         let steps = 0;
-        let lastX, lastY, lastZ;
+        let lastX = null, lastY = null, lastZ = null;
         const threshold = 15; // Порог для определения шага
         const stepCountElement = document.getElementById('stepCount');
 
-        if (window.DeviceMotionEvent) {
+        function startStepCounter() {
             window.addEventListener('devicemotion', function(event) {
                 const x = event.accelerationIncludingGravity.x;
                 const y = event.accelerationIncludingGravity.y;
@@ -69,8 +69,22 @@
                 lastY = y;
                 lastZ = z;
             });
+        }
+
+        // Проверяем, требует ли устройство запрос разрешения на доступ к датчикам движения
+        if (typeof DeviceMotionEvent.requestPermission === 'function') {
+            DeviceMotionEvent.requestPermission()
+                .then(response => {
+                    if (response === 'granted') {
+                        startStepCounter();
+                    } else {
+                        alert('Access to motion sensors denied.');
+                    }
+                })
+                .catch(console.error);
         } else {
-            alert("DeviceMotionEvent is not supported on this device.");
+            // Если разрешение не требуется (например, на Android)
+            startStepCounter();
         }
     </script>
 </body>
