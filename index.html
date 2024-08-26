@@ -23,11 +23,12 @@
             height: 300px;
             border: 2px solid #333;
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between;
             align-items: center;
             background-color: #d9d9d9;
             margin-bottom: 20px;
             position: relative;
+            overflow: hidden;
         }
 
         .gladiator {
@@ -41,10 +42,32 @@
             font-size: 20px;
             font-weight: bold;
             cursor: pointer;
+            position: absolute;
+            bottom: 0;
         }
 
         .gladiator.red {
             background-color: #e74c3c;
+        }
+
+        .gladiator .hp {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            background-color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: #333;
+        }
+
+        #gladiator1 {
+            left: 20px;
+        }
+
+        #gladiator2 {
+            right: 20px;
         }
 
         #message {
@@ -81,14 +104,22 @@
         <button class="betButton" onclick="placeBet(2)">Bet on Gladiator 2</button>
     </div>
     <div id="arena">
-        <div id="gladiator1" class="gladiator">1</div>
-        <div id="gladiator2" class="gladiator red">2</div>
+        <div id="gladiator1" class="gladiator">
+            <div class="hp">HP: 100</div>
+            1
+        </div>
+        <div id="gladiator2" class="gladiator red">
+            <div class="hp">HP: 100</div>
+            2
+        </div>
     </div>
     <button id="resetButton" onclick="resetGame()">New Fight</button>
 
     <script>
         let bet = null;
         let isFighting = false;
+        let hp1 = 100;
+        let hp2 = 100;
 
         function placeBet(gladiator) {
             if (isFighting) return;
@@ -99,11 +130,43 @@
 
         function startFight() {
             isFighting = true;
+            const gladiator1 = document.getElementById('gladiator1');
+            const gladiator2 = document.getElementById('gladiator2');
+
+            const fightInterval = setInterval(() => {
+                if (hp1 <= 0 || hp2 <= 0) {
+                    clearInterval(fightInterval);
+                    declareWinner(hp1 <= 0 ? 2 : 1);
+                } else {
+                    const damage1 = Math.floor(Math.random() * 10) + 1;
+                    const damage2 = Math.floor(Math.random() * 10) + 1;
+
+                    hp1 -= damage2;
+                    hp2 -= damage1;
+
+                    updateHP(gladiator1, hp1);
+                    updateHP(gladiator2, hp2);
+
+                    animateAttack(gladiator1, 'right');
+                    animateAttack(gladiator2, 'left');
+                }
+            }, 1000); // Атака каждые 1 секунду
+        }
+
+        function updateHP(gladiator, hp) {
+            gladiator.querySelector('.hp').innerText = `HP: ${hp > 0 ? hp : 0}`;
+        }
+
+        function animateAttack(gladiator, direction) {
+            gladiator.style.transform = `translateX(${direction === 'left' ? '-' : ''}20px)`;
             setTimeout(() => {
-                const winner = Math.random() < 0.5 ? 1 : 2;
-                document.getElementById('message').innerText = `Gladiator ${winner} wins!`;
-                checkBet(winner);
-            }, 2000); // Время сражения 2 секунды
+                gladiator.style.transform = `translateX(0)`;
+            }, 200);
+        }
+
+        function declareWinner(winner) {
+            document.getElementById('message').innerText = `Gladiator ${winner} wins!`;
+            checkBet(winner);
         }
 
         function checkBet(winner) {
@@ -119,8 +182,12 @@
         function resetGame() {
             isFighting = false;
             bet = null;
+            hp1 = 100;
+            hp2 = 100;
             document.getElementById('message').innerText = 'Choose your gladiator!';
             document.getElementById('resetButton').style.display = 'none';
+            updateHP(document.getElementById('gladiator1'), hp1);
+            updateHP(document.getElementById('gladiator2'), hp2);
         }
     </script>
 </body>
