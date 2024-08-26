@@ -3,88 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Step Counter Game</title>
+    <title>Gladiator Betting Game</title>
     <style>
         body {
             margin: 0;
-            overflow: hidden;
+            padding: 0;
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #f4f4f4;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            flex-direction: column;
         }
 
-        #gameContainer {
-            position: relative;
-            width: 100%;
-            max-width: 600px;
-            height: 100vh;
+        #arena {
+            width: 80%;
+            max-width: 800px;
+            height: 300px;
             border: 2px solid #333;
-            background-color: #fff;
-            overflow: hidden;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: #d9d9d9;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .gladiator {
+            width: 100px;
+            height: 200px;
+            background-color: #3498db;
+            color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
-            color: #333;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
         }
 
-        #stepCount {
-            font-size: 30px;
-            font-weight: bold;
+        .gladiator.red {
+            background-color: #e74c3c;
+        }
+
+        #message {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        #betContainer {
+            display: flex;
+            justify-content: space-around;
+            width: 50%;
+            max-width: 400px;
+            margin-bottom: 20px;
+        }
+
+        .betButton {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        #resetButton {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <div id="stepCount">Steps: 0</div>
+    <div id="message">Choose your gladiator!</div>
+    <div id="betContainer">
+        <button class="betButton" onclick="placeBet(1)">Bet on Gladiator 1</button>
+        <button class="betButton" onclick="placeBet(2)">Bet on Gladiator 2</button>
     </div>
+    <div id="arena">
+        <div id="gladiator1" class="gladiator">1</div>
+        <div id="gladiator2" class="gladiator red">2</div>
+    </div>
+    <button id="resetButton" onclick="resetGame()">New Fight</button>
 
     <script>
-        let steps = 0;
-        let lastX = null, lastY = null, lastZ = null;
-        const threshold = 15; // Порог для определения шага
-        const stepCountElement = document.getElementById('stepCount');
+        let bet = null;
+        let isFighting = false;
 
-        function startStepCounter() {
-            window.addEventListener('devicemotion', function(event) {
-                const x = event.accelerationIncludingGravity.x;
-                const y = event.accelerationIncludingGravity.y;
-                const z = event.accelerationIncludingGravity.z;
-
-                if (lastX !== null && lastY !== null && lastZ !== null) {
-                    const deltaX = Math.abs(lastX - x);
-                    const deltaY = Math.abs(lastY - y);
-                    const deltaZ = Math.abs(lastZ - z);
-
-                    if (deltaX > threshold || deltaY > threshold || deltaZ > threshold) {
-                        steps++;
-                        stepCountElement.innerText = `Steps: ${steps}`;
-                    }
-                }
-
-                lastX = x;
-                lastY = y;
-                lastZ = z;
-            });
+        function placeBet(gladiator) {
+            if (isFighting) return;
+            bet = gladiator;
+            document.getElementById('message').innerText = `You bet on Gladiator ${gladiator}. Fight starts!`;
+            startFight();
         }
 
-        // Проверяем, требует ли устройство запрос разрешения на доступ к датчикам движения
-        if (typeof DeviceMotionEvent.requestPermission === 'function') {
-            DeviceMotionEvent.requestPermission()
-                .then(response => {
-                    if (response === 'granted') {
-                        startStepCounter();
-                    } else {
-                        alert('Access to motion sensors denied.');
-                    }
-                })
-                .catch(console.error);
-        } else {
-            // Если разрешение не требуется (например, на Android)
-            startStepCounter();
+        function startFight() {
+            isFighting = true;
+            setTimeout(() => {
+                const winner = Math.random() < 0.5 ? 1 : 2;
+                document.getElementById('message').innerText = `Gladiator ${winner} wins!`;
+                checkBet(winner);
+            }, 2000); // Время сражения 2 секунды
+        }
+
+        function checkBet(winner) {
+            if (bet === winner) {
+                document.getElementById('message').innerText += ` You won!`;
+            } else {
+                document.getElementById('message').innerText += ` You lost.`;
+            }
+            document.getElementById('resetButton').style.display = 'block';
+            setTimeout(resetGame, 5000); // Автоматически сбрасывает игру через 5 секунд
+        }
+
+        function resetGame() {
+            isFighting = false;
+            bet = null;
+            document.getElementById('message').innerText = 'Choose your gladiator!';
+            document.getElementById('resetButton').style.display = 'none';
         }
     </script>
 </body>
