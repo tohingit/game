@@ -3,158 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Total War Mini-Game</title>
+    <title>Jumping Banana</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #f0e68c;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            flex-direction: column;
+            overflow: hidden;
         }
 
-        #armyContainer {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-
-        .unit {
-            width: 100px;
-            height: 150px;
-            background-color: #3498db;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 16px;
-            font-weight: bold;
-            margin: 10px;
-            cursor: pointer;
-            border-radius: 5px;
+        #gameContainer {
+            width: 100%;
+            height: 100%;
             position: relative;
+            overflow: hidden;
         }
 
-        .unit .hp, .unit .attack {
+        #banana {
+            width: 50px;
+            height: 80px;
+            background-color: yellow;
+            border-radius: 50% 50% 30% 30%;
             position: absolute;
-            bottom: 5px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 12px;
-            background-color: white;
-            padding: 2px 5px;
-            border-radius: 3px;
-            color: #333;
+            transition: bottom 0.2s;
         }
 
-        .unit .attack {
-            top: 5px;
-            bottom: auto;
+        #obstacle {
+            width: 40px;
+            height: 40px;
+            background-color: brown;
+            position: absolute;
+            bottom: 20px;
+            left: 100%;
+            animation: moveObstacle 2s linear infinite;
+        }
+
+        @keyframes moveObstacle {
+            from {
+                left: 100%;
+            }
+            to {
+                left: -40px;
+            }
         }
 
         #message {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             font-size: 24px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        #battleButton {
-            padding: 10px 20px;
-            font-size: 18px;
-            cursor: pointer;
-            display: block;
-            margin: 20px auto;
+            color: #333;
         }
     </style>
 </head>
 <body>
-    <div id="message">Create your army and equip it!</div>
-    <div id="armyContainer">
-        <!-- Units will be added here dynamically -->
+    <div id="gameContainer">
+        <div id="message">Score: 0</div>
+        <div id="banana"></div>
+        <div id="obstacle"></div>
     </div>
-    <button id="battleButton" onclick="startBattle()">Start Battle</button>
 
     <script>
-        let units = [];
-        let battleStarted = false;
+        const banana = document.getElementById('banana');
+        const obstacle = document.getElementById('obstacle');
+        const message = document.getElementById('message');
+        let score = 0;
+        let isJumping = false;
 
-        function addUnit(type, hp, attack) {
-            if (battleStarted) return;
-            const unit = {
-                type: type,
-                hp: hp,
-                attack: attack
-            };
-            units.push(unit);
-            renderUnits();
+        function jump() {
+            if (isJumping) return;
+            isJumping = true;
+            let jumpHeight = 150; // Высота прыжка
+
+            banana.style.bottom = `${parseInt(banana.style.bottom) + jumpHeight}px`;
+
+            setTimeout(() => {
+                banana.style.bottom = '20px';
+                isJumping = false;
+            }, 300); // Время нахождения в прыжке
         }
 
-        function renderUnits() {
-            const armyContainer = document.getElementById('armyContainer');
-            armyContainer.innerHTML = '';
-            units.forEach((unit, index) => {
-                const unitDiv = document.createElement('div');
-                unitDiv.className = 'unit';
-                unitDiv.innerHTML = `${unit.type}<br><div class="attack">ATK: ${unit.attack}</div><div class="hp">HP: ${unit.hp}</div>`;
-                unitDiv.onclick = () => removeUnit(index);
-                armyContainer.appendChild(unitDiv);
-            });
-        }
+        function checkCollision() {
+            const bananaRect = banana.getBoundingClientRect();
+            const obstacleRect = obstacle.getBoundingClientRect();
 
-        function removeUnit(index) {
-            if (battleStarted) return;
-            units.splice(index, 1);
-            renderUnits();
-        }
-
-        function startBattle() {
-            if (units.length === 0) {
-                alert('You must have at least one unit in your army to start the battle.');
-                return;
+            if (
+                bananaRect.left < obstacleRect.right &&
+                bananaRect.right > obstacleRect.left &&
+                bananaRect.bottom > obstacleRect.top &&
+                bananaRect.top < obstacleRect.bottom
+            ) {
+                endGame();
             }
-            battleStarted = true;
-            document.getElementById('message').innerText = 'Battle in progress...';
-
-            let enemyHp = Math.floor(Math.random() * 100) + 100;
-            let totalAttack = units.reduce((sum, unit) => sum + unit.attack, 0);
-
-            const battleInterval = setInterval(() => {
-                if (enemyHp <= 0 || totalAttack <= 0) {
-                    clearInterval(battleInterval);
-                    endBattle(enemyHp <= 0 ? 'Victory!' : 'Defeat');
-                } else {
-                    const unitDamage = Math.floor(Math.random() * 20) + 1;
-                    enemyHp -= totalAttack;
-                    totalAttack -= unitDamage;
-                }
-            }, 1000);
         }
 
-        function endBattle(result) {
-            document.getElementById('message').innerText = result;
-            document.getElementById('battleButton').innerText = 'New Battle';
-            document.getElementById('battleButton').onclick = resetGame;
+        function endGame() {
+            alert(`Game Over! Your score: ${score}`);
+            score = 0;
+            message.innerText = `Score: ${score}`;
+            obstacle.style.animation = 'none';
+            obstacle.offsetHeight; // Force reflow
+            obstacle.style.animation = null;
         }
 
-        function resetGame() {
-            battleStarted = false;
-            units = [];
-            document.getElementById('message').innerText = 'Create your army and equip it!';
-            document.getElementById('battleButton').innerText = 'Start Battle';
-            document.getElementById('battleButton').onclick = startBattle;
-            renderUnits();
-        }
+        document.addEventListener('keydown', event => {
+            if (event.code === 'Space') {
+                jump();
+            }
+        });
 
-        // Example units
-        addUnit('Infantry', 50, 15);
-        addUnit('Archer', 30, 10);
-        addUnit('Cavalry', 70, 20);
+        setInterval(() => {
+            if (!isJumping) {
+                checkCollision();
+            }
+        }, 10);
+
+        setInterval(() => {
+            score++;
+            message.innerText = `Score: ${score}`;
+        }, 1000); // Увеличение счета каждые 1 секунду
     </script>
 </body>
 </html>
