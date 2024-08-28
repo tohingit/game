@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gladiator Betting Game</title>
+    <title>Total War Mini-Game</title>
     <style>
         body {
             margin: 0;
@@ -17,178 +17,144 @@
             flex-direction: column;
         }
 
-        #arena {
-            width: 80%;
-            max-width: 800px;
-            height: 300px;
-            border: 2px solid #333;
+        #armyContainer {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            background-color: #d9d9d9;
+            flex-wrap: wrap;
             margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
         }
 
-        .gladiator {
+        .unit {
             width: 100px;
-            height: 200px;
+            height: 150px;
             background-color: #3498db;
             color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 20px;
+            font-size: 16px;
             font-weight: bold;
+            margin: 10px;
             cursor: pointer;
-            position: absolute;
-            bottom: 0;
+            border-radius: 5px;
+            position: relative;
         }
 
-        .gladiator.red {
-            background-color: #e74c3c;
-        }
-
-        .gladiator .hp {
+        .unit .hp, .unit .attack {
             position: absolute;
-            bottom: 100%;
+            bottom: 5px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 14px;
+            font-size: 12px;
             background-color: white;
             padding: 2px 5px;
             border-radius: 3px;
             color: #333;
         }
 
-        #gladiator1 {
-            left: 20px;
-        }
-
-        #gladiator2 {
-            right: 20px;
+        .unit .attack {
+            top: 5px;
+            bottom: auto;
         }
 
         #message {
             font-size: 24px;
             margin-bottom: 20px;
+            text-align: center;
         }
 
-        #betContainer {
-            display: flex;
-            justify-content: space-around;
-            width: 50%;
-            max-width: 400px;
-            margin-bottom: 20px;
-        }
-
-        .betButton {
+        #battleButton {
             padding: 10px 20px;
             font-size: 18px;
             cursor: pointer;
-        }
-
-        #resetButton {
-            padding: 10px 20px;
-            font-size: 18px;
-            cursor: pointer;
-            display: none;
+            display: block;
+            margin: 20px auto;
         }
     </style>
 </head>
 <body>
-    <div id="message">Choose your gladiator!</div>
-    <div id="betContainer">
-        <button class="betButton" onclick="placeBet(1)">Bet on Gladiator 1</button>
-        <button class="betButton" onclick="placeBet(2)">Bet on Gladiator 2</button>
+    <div id="message">Create your army and equip it!</div>
+    <div id="armyContainer">
+        <!-- Units will be added here dynamically -->
     </div>
-    <div id="arena">
-        <div id="gladiator1" class="gladiator">
-            <div class="hp">HP: 100</div>
-            1
-        </div>
-        <div id="gladiator2" class="gladiator red">
-            <div class="hp">HP: 100</div>
-            2
-        </div>
-    </div>
-    <button id="resetButton" onclick="resetGame()">New Fight</button>
+    <button id="battleButton" onclick="startBattle()">Start Battle</button>
 
     <script>
-        let bet = null;
-        let isFighting = false;
-        let hp1 = 100;
-        let hp2 = 100;
+        let units = [];
+        let battleStarted = false;
 
-        function placeBet(gladiator) {
-            if (isFighting) return;
-            bet = gladiator;
-            document.getElementById('message').innerText = `You bet on Gladiator ${gladiator}. Fight starts!`;
-            startFight();
+        function addUnit(type, hp, attack) {
+            if (battleStarted) return;
+            const unit = {
+                type: type,
+                hp: hp,
+                attack: attack
+            };
+            units.push(unit);
+            renderUnits();
         }
 
-        function startFight() {
-            isFighting = true;
-            const gladiator1 = document.getElementById('gladiator1');
-            const gladiator2 = document.getElementById('gladiator2');
-
-            const fightInterval = setInterval(() => {
-                if (hp1 <= 0 || hp2 <= 0) {
-                    clearInterval(fightInterval);
-                    declareWinner(hp1 <= 0 ? 2 : 1);
-                } else {
-                    const damage1 = Math.floor(Math.random() * 10) + 1;
-                    const damage2 = Math.floor(Math.random() * 10) + 1;
-
-                    hp1 -= damage2;
-                    hp2 -= damage1;
-
-                    updateHP(gladiator1, hp1);
-                    updateHP(gladiator2, hp2);
-
-                    animateAttack(gladiator1, 'right');
-                    animateAttack(gladiator2, 'left');
-                }
-            }, 1000); // Атака каждые 1 секунду
+        function renderUnits() {
+            const armyContainer = document.getElementById('armyContainer');
+            armyContainer.innerHTML = '';
+            units.forEach((unit, index) => {
+                const unitDiv = document.createElement('div');
+                unitDiv.className = 'unit';
+                unitDiv.innerHTML = `${unit.type}<br><div class="attack">ATK: ${unit.attack}</div><div class="hp">HP: ${unit.hp}</div>`;
+                unitDiv.onclick = () => removeUnit(index);
+                armyContainer.appendChild(unitDiv);
+            });
         }
 
-        function updateHP(gladiator, hp) {
-            gladiator.querySelector('.hp').innerText = `HP: ${hp > 0 ? hp : 0}`;
+        function removeUnit(index) {
+            if (battleStarted) return;
+            units.splice(index, 1);
+            renderUnits();
         }
 
-        function animateAttack(gladiator, direction) {
-            gladiator.style.transform = `translateX(${direction === 'left' ? '-' : ''}20px)`;
-            setTimeout(() => {
-                gladiator.style.transform = `translateX(0)`;
-            }, 200);
-        }
-
-        function declareWinner(winner) {
-            document.getElementById('message').innerText = `Gladiator ${winner} wins!`;
-            checkBet(winner);
-        }
-
-        function checkBet(winner) {
-            if (bet === winner) {
-                document.getElementById('message').innerText += ` You won!`;
-            } else {
-                document.getElementById('message').innerText += ` You lost.`;
+        function startBattle() {
+            if (units.length === 0) {
+                alert('You must have at least one unit in your army to start the battle.');
+                return;
             }
-            document.getElementById('resetButton').style.display = 'block';
-            setTimeout(resetGame, 5000); // Автоматически сбрасывает игру через 5 секунд
+            battleStarted = true;
+            document.getElementById('message').innerText = 'Battle in progress...';
+
+            let enemyHp = Math.floor(Math.random() * 100) + 100;
+            let totalAttack = units.reduce((sum, unit) => sum + unit.attack, 0);
+
+            const battleInterval = setInterval(() => {
+                if (enemyHp <= 0 || totalAttack <= 0) {
+                    clearInterval(battleInterval);
+                    endBattle(enemyHp <= 0 ? 'Victory!' : 'Defeat');
+                } else {
+                    const unitDamage = Math.floor(Math.random() * 20) + 1;
+                    enemyHp -= totalAttack;
+                    totalAttack -= unitDamage;
+                }
+            }, 1000);
+        }
+
+        function endBattle(result) {
+            document.getElementById('message').innerText = result;
+            document.getElementById('battleButton').innerText = 'New Battle';
+            document.getElementById('battleButton').onclick = resetGame;
         }
 
         function resetGame() {
-            isFighting = false;
-            bet = null;
-            hp1 = 100;
-            hp2 = 100;
-            document.getElementById('message').innerText = 'Choose your gladiator!';
-            document.getElementById('resetButton').style.display = 'none';
-            updateHP(document.getElementById('gladiator1'), hp1);
-            updateHP(document.getElementById('gladiator2'), hp2);
+            battleStarted = false;
+            units = [];
+            document.getElementById('message').innerText = 'Create your army and equip it!';
+            document.getElementById('battleButton').innerText = 'Start Battle';
+            document.getElementById('battleButton').onclick = startBattle;
+            renderUnits();
         }
+
+        // Example units
+        addUnit('Infantry', 50, 15);
+        addUnit('Archer', 30, 10);
+        addUnit('Cavalry', 70, 20);
     </script>
 </body>
 </html>
