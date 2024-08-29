@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jumping Banana</title>
+    <title>Jumping Square</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background-color: #f0e68c;
+            background-color: #87ceeb;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -24,22 +24,20 @@
             overflow: hidden;
         }
 
-        #banana {
+        #square {
             width: 50px;
-            height: 80px;
-            background-color: yellow;
-            border-radius: 50% 50% 30% 30%;
+            height: 50px;
+            background-color: #ff4500;
             position: absolute;
             bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 50px;
             transition: bottom 0.2s;
         }
 
         #obstacle {
             width: 40px;
             height: 40px;
-            background-color: brown;
+            background-color: #32cd32;
             position: absolute;
             bottom: 20px;
             left: 100%;
@@ -63,20 +61,32 @@
             font-size: 24px;
             color: #333;
         }
+
+        #tokenCount {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            color: #333;
+        }
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <div id="message">Score: 0</div>
-        <div id="banana"></div>
+        <div id="tokenCount">Tokens: 0</div>
+        <div id="square"></div>
         <div id="obstacle"></div>
     </div>
 
     <script>
-        const banana = document.getElementById('banana');
+        const square = document.getElementById('square');
         const obstacle = document.getElementById('obstacle');
         const message = document.getElementById('message');
+        const tokenCount = document.getElementById('tokenCount');
         let score = 0;
+        let tokens = 0;
         let isJumping = false;
 
         function jump() {
@@ -84,23 +94,23 @@
             isJumping = true;
             let jumpHeight = 150; // Высота прыжка
 
-            banana.style.bottom = `${parseInt(banana.style.bottom) + jumpHeight}px`;
+            square.style.bottom = `${parseInt(square.style.bottom) + jumpHeight}px`;
 
             setTimeout(() => {
-                banana.style.bottom = '20px';
+                square.style.bottom = '20px';
                 isJumping = false;
             }, 300); // Время нахождения в прыжке
         }
 
         function checkCollision() {
-            const bananaRect = banana.getBoundingClientRect();
+            const squareRect = square.getBoundingClientRect();
             const obstacleRect = obstacle.getBoundingClientRect();
 
             if (
-                bananaRect.left < obstacleRect.right &&
-                bananaRect.right > obstacleRect.left &&
-                bananaRect.bottom > obstacleRect.top &&
-                bananaRect.top < obstacleRect.bottom
+                squareRect.left < obstacleRect.right &&
+                squareRect.right > obstacleRect.left &&
+                squareRect.bottom > obstacleRect.top &&
+                squareRect.top < obstacleRect.bottom
             ) {
                 endGame();
             }
@@ -109,7 +119,9 @@
         function endGame() {
             alert(`Game Over! Your score: ${score}`);
             score = 0;
+            tokens = 0;
             message.innerText = `Score: ${score}`;
+            tokenCount.innerText = `Tokens: ${tokens}`;
             obstacle.style.animation = 'none';
             obstacle.offsetHeight; // Force reflow
             obstacle.style.animation = null;
@@ -131,6 +143,11 @@
             score++;
             message.innerText = `Score: ${score}`;
         }, 1000); // Увеличение счета каждые 1 секунду
+
+        obstacle.addEventListener('animationiteration', () => {
+            tokens++;
+            tokenCount.innerText = `Tokens: ${tokens}`;
+        });
     </script>
 </body>
 </html>
