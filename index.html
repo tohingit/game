@@ -127,11 +127,7 @@
             obstacle.style.animation = null;
         }
 
-        document.addEventListener('keydown', event => {
-            if (event.code === 'Space') {
-                jump();
-            }
-        });
+        document.addEventListener('touchstart', jump);
 
         setInterval(() => {
             if (!isJumping) {
@@ -139,14 +135,11 @@
             }
         }, 10);
 
-        setInterval(() => {
-            score++;
-            message.innerText = `Score: ${score}`;
-        }, 1000); // Увеличение счета каждые 1 секунду
-
         obstacle.addEventListener('animationiteration', () => {
             tokens++;
+            score++;
             tokenCount.innerText = `Tokens: ${tokens}`;
+            message.innerText = `Score: ${score}`;
         });
     </script>
 </body>
