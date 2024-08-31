@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jumping Square</title>
+    <title>Mining Game</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background-color: #87ceeb;
+            background-color: #8B4513;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -24,123 +24,106 @@
             overflow: hidden;
         }
 
-        #square {
+        #miner {
             width: 50px;
             height: 50px;
-            background-color: #ff4500;
+            background-color: #DAA520;
             position: absolute;
             bottom: 20px;
             left: 50px;
-            transition: bottom 0.2s;
         }
 
-        #obstacle {
-            width: 40px;
-            height: 40px;
-            background-color: #32cd32;
+        #mine {
+            width: 60px;
+            height: 60px;
+            background-color: #2F4F4F;
             position: absolute;
             bottom: 20px;
-            left: 100%;
-            animation: moveObstacle 2s linear infinite;
+            left: calc(100% - 80px);
         }
 
-        @keyframes moveObstacle {
-            from {
-                left: 100%;
-            }
-            to {
-                left: -40px;
-            }
-        }
-
-        #message {
+        #storage {
             position: absolute;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 24px;
-            color: #333;
+            font-size: 20px;
+            color: #fff;
         }
 
-        #tokenCount {
+        #collectButton {
             position: absolute;
-            top: 60px;
+            top: 80px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 20px;
-            color: #333;
+            padding: 10px 20px;
+            background-color: #32CD32;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #storageStatus {
+            position: absolute;
+            top: 140px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            color: #fff;
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <div id="message">Score: 0</div>
-        <div id="tokenCount">Tokens: 0</div>
-        <div id="square"></div>
-        <div id="obstacle"></div>
+        <div id="storage">Ore in Minecart: 0/100</div>
+        <button id="collectButton">Collect Ore</button>
+        <div id="storageStatus"></div>
+        <div id="miner"></div>
+        <div id="mine"></div>
     </div>
 
     <script>
-        const square = document.getElementById('square');
-        const obstacle = document.getElementById('obstacle');
-        const message = document.getElementById('message');
-        const tokenCount = document.getElementById('tokenCount');
-        let score = 0;
-        let tokens = 0;
-        let isJumping = false;
+        const miner = document.getElementById('miner');
+        const mine = document.getElementById('mine');
+        const storage = document.getElementById('storage');
+        const collectButton = document.getElementById('collectButton');
+        const storageStatus = document.getElementById('storageStatus');
 
-        function jump() {
-            if (isJumping) return;
-            isJumping = true;
-            let jumpHeight = 150; // Высота прыжка
+        let oreCollected = 0;
+        let storageCapacity = 100;
+        let isMining = false;
 
-            square.style.bottom = `${parseInt(square.style.bottom) + jumpHeight}px`;
+        function mineOre() {
+            if (isMining) return;
+            isMining = true;
 
-            setTimeout(() => {
-                square.style.bottom = '20px';
-                isJumping = false;
-            }, 300); // Время нахождения в прыжке
+            let miningSpeed = 500; // Скорость добычи руды в миллисекундах
+            const miningInterval = setInterval(() => {
+                if (oreCollected < storageCapacity) {
+                    oreCollected++;
+                    storage.innerText = `Ore in Minecart: ${oreCollected}/${storageCapacity}`;
+                } else {
+                    clearInterval(miningInterval);
+                    storageStatus.innerText = 'Storage is full! Collect the ore.';
+                    isMining = false;
+                }
+            }, miningSpeed);
         }
 
-        function checkCollision() {
-            const squareRect = square.getBoundingClientRect();
-            const obstacleRect = obstacle.getBoundingClientRect();
-
-            if (
-                squareRect.left < obstacleRect.right &&
-                squareRect.right > obstacleRect.left &&
-                squareRect.bottom > obstacleRect.top &&
-                squareRect.top < obstacleRect.bottom
-            ) {
-                endGame();
+        function collectOre() {
+            if (oreCollected > 0) {
+                storageStatus.innerText = `Collected ${oreCollected} ore. Storage is empty.`;
+                oreCollected = 0;
+                storage.innerText = `Ore in Minecart: ${oreCollected}/${storageCapacity}`;
+                mineOre();
             }
         }
 
-        function endGame() {
-            alert(`Game Over! Your score: ${score}`);
-            score = 0;
-            tokens = 0;
-            message.innerText = `Score: ${score}`;
-            tokenCount.innerText = `Tokens: ${tokens}`;
-            obstacle.style.animation = 'none';
-            obstacle.offsetHeight; // Force reflow
-            obstacle.style.animation = null;
-        }
+        document.addEventListener('touchstart', mineOre);
+        collectButton.addEventListener('click', collectOre);
 
-        document.addEventListener('touchstart', jump);
-
-        setInterval(() => {
-            if (!isJumping) {
-                checkCollision();
-            }
-        }, 10);
-
-        obstacle.addEventListener('animationiteration', () => {
-            tokens++;
-            score++;
-            tokenCount.innerText = `Tokens: ${tokens}`;
-            message.innerText = `Score: ${score}`;
-        });
+        mineOre();
     </script>
 </body>
 </html>
