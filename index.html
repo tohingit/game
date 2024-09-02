@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JumpMaster</title>
+    <title>Space Explorer</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #282c34;
+            font-family: Arial, sans-serif;
+            background-color: #000;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -21,33 +21,27 @@
             width: 100%;
             height: 100%;
             position: relative;
-            overflow: hidden;
-            background: linear-gradient(to bottom, #1e1e1e, #282c34);
+            background-color: #000;
         }
 
-        #player {
+        #spaceship {
             width: 50px;
             height: 50px;
-            background-color: #61dafb;
+            background-color: #f0f;
             position: absolute;
-            bottom: 50px;
-            left: 50px;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
             border-radius: 50%;
-            animation: idle 1s infinite;
         }
 
-        @keyframes idle {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .obstacle {
-            width: 30px;
-            height: 60px;
-            background-color: #ff6b6b;
+        .asteroid {
+            width: 40px;
+            height: 40px;
+            background-color: #888;
             position: absolute;
-            bottom: 50px;
-            border-radius: 10px;
+            top: 0;
+            border-radius: 50%;
         }
 
         #scoreDisplay {
@@ -55,92 +49,88 @@
             top: 20px;
             left: 20px;
             font-size: 24px;
-            color: #61dafb;
-        }
-
-        #livesDisplay {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 24px;
-            color: #ff6b6b;
+            color: #fff;
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <div id="scoreDisplay">Score: 0</div>
-        <div id="livesDisplay">Lives: 10</div>
-        <div id="player"></div>
+        <div id="spaceship"></div>
     </div>
 
     <script>
         const gameContainer = document.getElementById('gameContainer');
-        const player = document.getElementById('player');
+        const spaceship = document.getElementById('spaceship');
         const scoreDisplay = document.getElementById('scoreDisplay');
-        const livesDisplay = document.getElementById('livesDisplay');
 
         let score = 0;
-        let lives = 10;
-        let isJumping = false;
-        let gravity = 0.9;
-        let jumpHeight = -15;
-        let playerVelocity = 0;
+        let spaceshipY = gameContainer.clientHeight / 2 - spaceship.clientHeight / 2;
+        let velocity = 0;
+        let gravity = 0.5;
+        let thrust = -10;
+        let isTouching = false;
 
-        document.addEventListener('touchstart', jump);
-        document.addEventListener('keydown', event => {
-            if (event.code === 'Space') jump();
+        document.addEventListener('touchstart', () => {
+            isTouching = true;
         });
 
-        function jump() {
-            if (!isJumping) {
-                isJumping = true;
-                playerVelocity = jumpHeight;
-            }
-        }
+        document.addEventListener('touchend', () => {
+            isTouching = false;
+        });
 
-        function createObstacle() {
-            const obstacle = document.createElement('div');
-            obstacle.classList.add('obstacle');
-            obstacle.style.left = `${gameContainer.clientWidth}px`;
-            gameContainer.appendChild(obstacle);
+        function createAsteroid() {
+            const asteroid = document.createElement('div');
+            asteroid.classList.add('asteroid');
+            asteroid.style.top = `${Math.random() * (gameContainer.clientHeight - 40)}px`;
+            asteroid.style.left = `${gameContainer.clientWidth}px`;
+            gameContainer.appendChild(asteroid);
 
-            let obstacleInterval = setInterval(() => {
-                let obstaclePosition = obstacle.offsetLeft;
+            let asteroidInterval = setInterval(() => {
+                const asteroidX = asteroid.offsetLeft;
 
-                if (obstaclePosition < -30) {
-                    clearInterval(obstacleInterval);
-                    gameContainer.removeChild(obstacle);
-                    score++;
-                    scoreDisplay.innerText = `Score: ${score}`;
-                } else if (obstaclePosition < 100 && obstaclePosition > 50 && player.offsetTop >= gameContainer.clientHeight - 110) {
-                    clearInterval(obstacleInterval);
-                    gameContainer.removeChild(obstacle);
-                    lives--;
-                    livesDisplay.innerText = `Lives: ${lives}`;
-                    if (lives === 0) {
-                        alert('Game Over!');
+                if (asteroidX < -40) {
+                    clearInterval(asteroidInterval);
+                    gameContainer.removeChild(asteroid);
+                } else {
+                    asteroid.style.left = `${asteroidX - 5}px`;
+
+                    // Collision detection
+                    if (
+                        asteroidX < 70 &&
+                        asteroidX > 20 &&
+                        spaceshipY < asteroid.offsetTop + 40 &&
+                        spaceshipY + 50 > asteroid.offsetTop
+                    ) {
+                        alert('Game Over! Final Score: ' + score);
                         location.reload();
                     }
-                } else {
-                    obstacle.style.left = `${obstaclePosition - 5}px`;
                 }
             }, 20);
         }
 
-        function applyGravity() {
-            if (player.offsetTop < gameContainer.clientHeight - 100) {
-                playerVelocity += gravity;
-                player.style.bottom = `${player.offsetTop - playerVelocity}px`;
+        function updateSpaceship() {
+            if (isTouching) {
+                velocity = thrust;
             } else {
-                player.style.bottom = '50px';
-                isJumping = false;
-                playerVelocity = 0;
+                velocity += gravity;
             }
+
+            spaceshipY += velocity;
+            if (spaceshipY < 0) spaceshipY = 0;
+            if (spaceshipY > gameContainer.clientHeight - spaceship.clientHeight) spaceshipY = gameContainer.clientHeight - spaceship.clientHeight;
+
+            spaceship.style.top = `${spaceshipY}px`;
         }
 
-        setInterval(applyGravity, 20);
-        setInterval(createObstacle, 2000);
+        function updateScore() {
+            score++;
+            scoreDisplay.innerText = `Score: ${score}`;
+        }
+
+        setInterval(updateSpaceship, 20);
+        setInterval(createAsteroid, 2000);
+        setInterval(updateScore, 1000);
     </script>
 </body>
 </html>
