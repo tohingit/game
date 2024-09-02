@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dodge Game</title>
+    <title>Jumping Game</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background-color: #1e1e1e;
+            background-color: #87CEEB;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -23,26 +23,24 @@
             height: 100%;
             position: relative;
             overflow: hidden;
-            background-color: #333;
+            background-color: #1e1e1e;
         }
 
         #player {
             width: 50px;
             height: 50px;
-            background-color: #00ff00;
+            background-color: #FFD700;
             position: absolute;
             bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 50px;
         }
 
-        .fallingObject {
-            width: 40px;
-            height: 40px;
-            background-color: #ff0000;
+        .obstacle {
+            width: 30px;
+            height: 30px;
+            background-color: #FF6347;
             position: absolute;
-            top: -50px;
-            border-radius: 50%;
+            bottom: 20px;
         }
 
         #scoreDisplay {
@@ -50,6 +48,7 @@
             top: 20px;
             left: 20px;
             font-size: 20px;
+            color: #000;
         }
 
         #livesDisplay {
@@ -57,6 +56,7 @@
             top: 20px;
             right: 20px;
             font-size: 20px;
+            color: #000;
         }
     </style>
 </head>
@@ -75,43 +75,61 @@
 
         let score = 0;
         let lives = 10;
-        const speed = 3;
-        const fallingInterval = 1000;
-
-        // Load accumulated score
+        const speed = 5;
+        const jumpHeight = 100;
+        const obstacleInterval = 1500;
+        let isJumping = false;
         let accumulatedScore = localStorage.getItem('accumulatedScore') || 0;
         scoreDisplay.innerText = `Score: ${accumulatedScore}`;
 
-        function movePlayer(event) {
-            const touchX = event.touches[0].clientX;
-            player.style.left = `${touchX - player.offsetWidth / 2}px`;
+        function jump() {
+            if (isJumping) return;
+            isJumping = true;
+            let jumpUp = setInterval(() => {
+                if (parseInt(player.style.bottom) < jumpHeight) {
+                    player.style.bottom = `${parseInt(player.style.bottom) + 5}px`;
+                } else {
+                    clearInterval(jumpUp);
+                    let jumpDown = setInterval(() => {
+                        if (parseInt(player.style.bottom) > 20) {
+                            player.style.bottom = `${parseInt(player.style.bottom) - 5}px`;
+                        } else {
+                            clearInterval(jumpDown);
+                            isJumping = false;
+                        }
+                    }, 20);
+                }
+            }, 20);
         }
 
-        function createFallingObject() {
-            const fallingObject = document.createElement('div');
-            fallingObject.classList.add('fallingObject');
-            fallingObject.style.left = `${Math.random() * (gameContainer.clientWidth - 40)}px`;
-            gameContainer.appendChild(fallingObject);
+        function createObstacle() {
+            const obstacle = document.createElement('div');
+            obstacle.classList.add('obstacle');
+            obstacle.style.left = `${gameContainer.clientWidth}px`;
+            gameContainer.appendChild(obstacle);
 
-            let fallInterval = setInterval(() => {
+            let moveInterval = setInterval(() => {
                 let playerRect = player.getBoundingClientRect();
-                let objectRect = fallingObject.getBoundingClientRect();
+                let obstacleRect = obstacle.getBoundingClientRect();
 
-                if (objectRect.top >= gameContainer.clientHeight) {
-                    clearInterval(fallInterval);
-                    gameContainer.removeChild(fallingObject);
+                if (obstacleRect.left < 0) {
+                    clearInterval(moveInterval);
+                    gameContainer.removeChild(obstacle);
+                    score++;
+                    accumulatedScore++;
+                    scoreDisplay.innerText = `Score: ${accumulatedScore}`;
+                    localStorage.setItem('accumulatedScore', accumulatedScore);
                 } else {
-                    fallingObject.style.top = `${objectRect.top + speed}px`;
+                    obstacle.style.left = `${obstacleRect.left - speed}px`;
 
                     // Collision detection
                     if (
-                        objectRect.top < playerRect.bottom &&
-                        objectRect.bottom > playerRect.top &&
-                        objectRect.left < playerRect.right &&
-                        objectRect.right > playerRect.left
+                        obstacleRect.left < playerRect.right &&
+                        obstacleRect.right > playerRect.left &&
+                        obstacleRect.bottom > playerRect.top
                     ) {
-                        clearInterval(fallInterval);
-                        gameContainer.removeChild(fallingObject);
+                        clearInterval(moveInterval);
+                        gameContainer.removeChild(obstacle);
                         lives--;
                         livesDisplay.innerText = `Lives: ${lives}`;
                         
@@ -127,16 +145,8 @@
             }, 20);
         }
 
-        function increaseScore() {
-            score++;
-            accumulatedScore++;
-            scoreDisplay.innerText = `Score: ${accumulatedScore}`;
-            localStorage.setItem('accumulatedScore', accumulatedScore);
-        }
-
-        document.addEventListener('touchmove', movePlayer);
-        setInterval(createFallingObject, fallingInterval);
-        setInterval(increaseScore, 1000);
+        document.addEventListener('touchstart', jump);
+        setInterval(createObstacle, obstacleInterval);
     </script>
 </body>
 </html>
