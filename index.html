@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mining Game</title>
+    <title>Dodge Game</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background-color: #8B4513;
+            background-color: #1e1e1e;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
+            color: #fff;
         }
 
         #gameContainer {
@@ -22,108 +23,120 @@
             height: 100%;
             position: relative;
             overflow: hidden;
+            background-color: #333;
         }
 
-        #miner {
+        #player {
             width: 50px;
             height: 50px;
-            background-color: #DAA520;
+            background-color: #00ff00;
             position: absolute;
             bottom: 20px;
-            left: 50px;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
-        #mine {
-            width: 60px;
-            height: 60px;
-            background-color: #2F4F4F;
+        .fallingObject {
+            width: 40px;
+            height: 40px;
+            background-color: #ff0000;
             position: absolute;
-            bottom: 20px;
-            left: calc(100% - 80px);
+            top: -50px;
+            border-radius: 50%;
         }
 
-        #storage {
+        #scoreDisplay {
             position: absolute;
             top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 20px;
             font-size: 20px;
-            color: #fff;
         }
 
-        #collectButton {
+        #livesDisplay {
             position: absolute;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 20px;
-            background-color: #32CD32;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        #storageStatus {
-            position: absolute;
-            top: 140px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 16px;
-            color: #fff;
+            top: 20px;
+            right: 20px;
+            font-size: 20px;
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <div id="storage">Ore in Minecart: 0/100</div>
-        <button id="collectButton">Collect Ore</button>
-        <div id="storageStatus"></div>
-        <div id="miner"></div>
-        <div id="mine"></div>
+        <div id="scoreDisplay">Score: 0</div>
+        <div id="livesDisplay">Lives: 10</div>
+        <div id="player"></div>
     </div>
 
     <script>
-        const miner = document.getElementById('miner');
-        const mine = document.getElementById('mine');
-        const storage = document.getElementById('storage');
-        const collectButton = document.getElementById('collectButton');
-        const storageStatus = document.getElementById('storageStatus');
+        const gameContainer = document.getElementById('gameContainer');
+        const player = document.getElementById('player');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const livesDisplay = document.getElementById('livesDisplay');
 
-        let oreCollected = 0;
-        let storageCapacity = 100;
-        let isMining = false;
+        let score = 0;
+        let lives = 10;
+        const speed = 3;
+        const fallingInterval = 1000;
 
-        function mineOre() {
-            if (isMining) return;
-            isMining = true;
+        // Load accumulated score
+        let accumulatedScore = localStorage.getItem('accumulatedScore') || 0;
+        scoreDisplay.innerText = `Score: ${accumulatedScore}`;
 
-            let miningSpeed = 500; // Скорость добычи руды в миллисекундах
-            const miningInterval = setInterval(() => {
-                if (oreCollected < storageCapacity) {
-                    oreCollected++;
-                    storage.innerText = `Ore in Minecart: ${oreCollected}/${storageCapacity}`;
+        function movePlayer(event) {
+            const touchX = event.touches[0].clientX;
+            player.style.left = `${touchX - player.offsetWidth / 2}px`;
+        }
+
+        function createFallingObject() {
+            const fallingObject = document.createElement('div');
+            fallingObject.classList.add('fallingObject');
+            fallingObject.style.left = `${Math.random() * (gameContainer.clientWidth - 40)}px`;
+            gameContainer.appendChild(fallingObject);
+
+            let fallInterval = setInterval(() => {
+                let playerRect = player.getBoundingClientRect();
+                let objectRect = fallingObject.getBoundingClientRect();
+
+                if (objectRect.top >= gameContainer.clientHeight) {
+                    clearInterval(fallInterval);
+                    gameContainer.removeChild(fallingObject);
                 } else {
-                    clearInterval(miningInterval);
-                    storageStatus.innerText = 'Storage is full! Collect the ore.';
-                    isMining = false;
+                    fallingObject.style.top = `${objectRect.top + speed}px`;
+
+                    // Collision detection
+                    if (
+                        objectRect.top < playerRect.bottom &&
+                        objectRect.bottom > playerRect.top &&
+                        objectRect.left < playerRect.right &&
+                        objectRect.right > playerRect.left
+                    ) {
+                        clearInterval(fallInterval);
+                        gameContainer.removeChild(fallingObject);
+                        lives--;
+                        livesDisplay.innerText = `Lives: ${lives}`;
+                        
+                        if (lives <= 0) {
+                            alert(`Game Over! Your total score: ${accumulatedScore}`);
+                            lives = 10;
+                            accumulatedScore = 0;
+                            localStorage.setItem('accumulatedScore', accumulatedScore);
+                            scoreDisplay.innerText = `Score: ${accumulatedScore}`;
+                        }
+                    }
                 }
-            }, miningSpeed);
+            }, 20);
         }
 
-        function collectOre() {
-            if (oreCollected > 0) {
-                storageStatus.innerText = `Collected ${oreCollected} ore. Storage is empty.`;
-                oreCollected = 0;
-                storage.innerText = `Ore in Minecart: ${oreCollected}/${storageCapacity}`;
-                mineOre();
-            }
+        function increaseScore() {
+            score++;
+            accumulatedScore++;
+            scoreDisplay.innerText = `Score: ${accumulatedScore}`;
+            localStorage.setItem('accumulatedScore', accumulatedScore);
         }
 
-        document.addEventListener('touchstart', mineOre);
-        collectButton.addEventListener('click', collectOre);
-
-        mineOre();
+        document.addEventListener('touchmove', movePlayer);
+        setInterval(createFallingObject, fallingInterval);
+        setInterval(increaseScore, 1000);
     </script>
 </body>
 </html>
