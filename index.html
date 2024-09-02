@@ -15,7 +15,6 @@
             align-items: center;
             height: 100vh;
             overflow: hidden;
-            color: #61dafb;
         }
 
         #gameContainer {
@@ -66,30 +65,12 @@
             font-size: 24px;
             color: #ff6b6b;
         }
-
-        #dailyReward {
-            position: absolute;
-            top: 70px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 18px;
-            color: #61dafb;
-        }
-
-        #powerUp {
-            width: 30px;
-            height: 30px;
-            background-color: #32cd32;
-            position: absolute;
-            border-radius: 50%;
-        }
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <div id="scoreDisplay">Score: 0</div>
         <div id="livesDisplay">Lives: 10</div>
-        <div id="dailyReward">Daily Lives: +10</div>
         <div id="player"></div>
     </div>
 
@@ -98,49 +79,24 @@
         const player = document.getElementById('player');
         const scoreDisplay = document.getElementById('scoreDisplay');
         const livesDisplay = document.getElementById('livesDisplay');
-        const dailyReward = document.getElementById('dailyReward');
 
         let score = 0;
         let lives = 10;
-        const speed = 5;
-        const jumpHeight = 150;
-        const obstacleInterval = 1500;
         let isJumping = false;
-        let gameSpeed = 20;
-        let accumulatedScore = localStorage.getItem('accumulatedScore') || 0;
-        scoreDisplay.innerText = `Score: ${accumulatedScore}`;
-        lives = parseInt(localStorage.getItem('dailyLives')) || 10;
-        livesDisplay.innerText = `Lives: ${lives}`;
+        let gravity = 0.9;
+        let jumpHeight = -15;
+        let playerVelocity = 0;
 
-        dailyReward.addEventListener('click', () => {
-            if (lives < 10) {
-                lives += 10;
-                livesDisplay.innerText = `Lives: ${lives}`;
-                localStorage.setItem('dailyLives', lives);
-            }
+        document.addEventListener('touchstart', jump);
+        document.addEventListener('keydown', event => {
+            if (event.code === 'Space') jump();
         });
 
         function jump() {
-            if (isJumping) return;
-            isJumping = true;
-            player.style.animation = 'none';
-
-            let jumpUp = setInterval(() => {
-                if (parseInt(player.style.bottom) < jumpHeight) {
-                    player.style.bottom = `${parseInt(player.style.bottom) + 5}px`;
-                } else {
-                    clearInterval(jumpUp);
-                    let jumpDown = setInterval(() => {
-                        if (parseInt(player.style.bottom) > 50) {
-                            player.style.bottom = `${parseInt(player.style.bottom) - 5}px`;
-                        } else {
-                            clearInterval(jumpDown);
-                            isJumping = false;
-                            player.style.animation = 'idle 1s infinite';
-                        }
-                    }, gameSpeed);
-                }
-            }, gameSpeed);
+            if (!isJumping) {
+                isJumping = true;
+                playerVelocity = jumpHeight;
+            }
         }
 
         function createObstacle() {
@@ -149,79 +105,42 @@
             obstacle.style.left = `${gameContainer.clientWidth}px`;
             gameContainer.appendChild(obstacle);
 
-            let moveInterval = setInterval(() => {
-                let playerRect = player.getBoundingClientRect();
-                let obstacleRect = obstacle.getBoundingClientRect();
+            let obstacleInterval = setInterval(() => {
+                let obstaclePosition = obstacle.offsetLeft;
 
-                if (obstacleRect.left < 0) {
-                    clearInterval(moveInterval);
+                if (obstaclePosition < -30) {
+                    clearInterval(obstacleInterval);
                     gameContainer.removeChild(obstacle);
                     score++;
-                    accumulatedScore++;
-                    scoreDisplay.innerText = `Score: ${accumulatedScore}`;
-                    localStorage.setItem('accumulatedScore', accumulatedScore);
-                } else {
-                    obstacle.style.left = `${obstacleRect.left - speed}px`;
-
-                    // Collision detection
-                    if (
-                        obstacleRect.left < playerRect.right &&
-                        obstacleRect.right > playerRect.left &&
-                        obstacleRect.bottom > playerRect.top
-                    ) {
-                        clearInterval(moveInterval);
-                        gameContainer.removeChild(obstacle);
-                        lives--;
-                        livesDisplay.innerText = `Lives: ${lives}`;
-                        
-                        if (lives <= 0) {
-                            alert(`Game Over! Your total score: ${accumulatedScore}`);
-                            lives = 10;
-                            accumulatedScore = 0;
-                            localStorage.setItem('accumulatedScore', accumulatedScore);
-                            scoreDisplay.innerText = `Score: ${accumulatedScore}`;
-                        }
+                    scoreDisplay.innerText = `Score: ${score}`;
+                } else if (obstaclePosition < 100 && obstaclePosition > 50 && player.offsetTop >= gameContainer.clientHeight - 110) {
+                    clearInterval(obstacleInterval);
+                    gameContainer.removeChild(obstacle);
+                    lives--;
+                    livesDisplay.innerText = `Lives: ${lives}`;
+                    if (lives === 0) {
+                        alert('Game Over!');
+                        location.reload();
                     }
+                } else {
+                    obstacle.style.left = `${obstaclePosition - 5}px`;
                 }
-            }, gameSpeed);
+            }, 20);
         }
 
-        function createPowerUp() {
-            const powerUp = document.createElement('div');
-            powerUp.id = 'powerUp';
-            powerUp.style.left = `${gameContainer.clientWidth}px`;
-            powerUp.style.bottom = `${Math.random() * 150 + 50}px`;
-            gameContainer.appendChild(powerUp);
-
-            let moveInterval = setInterval(() => {
-                let playerRect = player.getBoundingClientRect();
-                let powerUpRect = powerUp.getBoundingClientRect();
-
-                if (powerUpRect.left < 0) {
-                    clearInterval(moveInterval);
-                    gameContainer.removeChild(powerUp);
-                } else {
-                    powerUp.style.left = `${powerUpRect.left - speed}px`;
-
-                    // Power-up collection
-                    if (
-                        powerUpRect.left < playerRect.right &&
-                        powerUpRect.right > playerRect.left &&
-                        powerUpRect.bottom > playerRect.top &&
-                        powerUpRect.top < playerRect.bottom
-                    ) {
-                        clearInterval(moveInterval);
-                        gameContainer.removeChild(powerUp);
-                        lives += 1;
-                        livesDisplay.innerText = `Lives: ${lives}`;
-                    }
-                }
-            }, gameSpeed);
+        function applyGravity() {
+            if (player.offsetTop < gameContainer.clientHeight - 100) {
+                playerVelocity += gravity;
+                player.style.bottom = `${player.offsetTop - playerVelocity}px`;
+            } else {
+                player.style.bottom = '50px';
+                isJumping = false;
+                playerVelocity = 0;
+            }
         }
 
-        document.addEventListener('touchstart', jump);
-        setInterval(createObstacle, obstacleInterval);
-        setInterval(createPowerUp, 10000); // Generate a power-up every 10 seconds
+        setInterval(applyGravity, 20);
+        setInterval(createObstacle, 2000);
     </script>
 </body>
 </html>
