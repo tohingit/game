@@ -1,136 +1,145 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Explorer</title>
+    <title>Космический Шутер</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
             background-color: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             overflow: hidden;
+            font-family: Arial, sans-serif;
+            color: #fff;
         }
 
         #gameContainer {
-            width: 100%;
-            height: 100%;
             position: relative;
-            background-color: #000;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle, #1e1e1e, #000);
         }
 
-        #spaceship {
+        #player {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             width: 50px;
             height: 50px;
-            background-color: #f0f;
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            border-radius: 50%;
+            background: url('https://i.imgur.com/OdL0XPt.png') no-repeat center center / contain;
         }
 
-        .asteroid {
-            width: 40px;
-            height: 40px;
-            background-color: #888;
+        .bullet {
             position: absolute;
-            top: 0;
-            border-radius: 50%;
+            width: 5px;
+            height: 20px;
+            background-color: #ff0;
+        }
+
+        .enemy {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: url('https://i.imgur.com/1aT8Z3G.png') no-repeat center center / contain;
+        }
+
+        #scoreDisplay, #livesDisplay {
+            position: absolute;
+            top: 10px;
+            font-size: 20px;
+            z-index: 1000;
         }
 
         #scoreDisplay {
-            position: absolute;
-            top: 20px;
             left: 20px;
-            font-size: 24px;
+        }
+
+        #livesDisplay {
+            right: 20px;
+        }
+
+        /* Кнопки для мобильных устройств */
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .control-button {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
             color: #fff;
+            font-size: 30px;
+            text-align: center;
+            line-height: 60px;
+        }
+
+        @media (min-width: 768px) {
+            #controls {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <div id="scoreDisplay">Score: 0</div>
-        <div id="spaceship"></div>
+        <div id="scoreDisplay">Очки: 0</div>
+        <div id="livesDisplay">Жизни: 3</div>
+        <div id="player"></div>
+        <div id="controls">
+            <button id="leftButton" class="control-button">⬅️</button>
+            <button id="shootButton" class="control-button">🔫</button>
+            <button id="rightButton" class="control-button">➡️</button>
+        </div>
     </div>
 
     <script>
         const gameContainer = document.getElementById('gameContainer');
-        const spaceship = document.getElementById('spaceship');
+        const player = document.getElementById('player');
         const scoreDisplay = document.getElementById('scoreDisplay');
+        const livesDisplay = document.getElementById('livesDisplay');
+        const leftButton = document.getElementById('leftButton');
+        const rightButton = document.getElementById('rightButton');
+        const shootButton = document.getElementById('shootButton');
 
         let score = 0;
-        let spaceshipY = gameContainer.clientHeight / 2 - spaceship.clientHeight / 2;
-        let velocity = 0;
-        let gravity = 0.5;
-        let thrust = -10;
-        let isTouching = false;
+        let lives = 3;
+        let playerSpeed = 10;
+        let bullets = [];
+        let enemies = [];
+        let enemyInterval;
+        let gameOver = false;
 
-        document.addEventListener('touchstart', () => {
-            isTouching = true;
-        });
+        // Управление с клавиатуры
+        const keys = {
+            ArrowLeft: false,
+            ArrowRight: false,
+            Space: false
+        };
 
-        document.addEventListener('touchend', () => {
-            isTouching = false;
-        });
-
-        function createAsteroid() {
-            const asteroid = document.createElement('div');
-            asteroid.classList.add('asteroid');
-            asteroid.style.top = `${Math.random() * (gameContainer.clientHeight - 40)}px`;
-            asteroid.style.left = `${gameContainer.clientWidth}px`;
-            gameContainer.appendChild(asteroid);
-
-            let asteroidInterval = setInterval(() => {
-                const asteroidX = asteroid.offsetLeft;
-
-                if (asteroidX < -40) {
-                    clearInterval(asteroidInterval);
-                    gameContainer.removeChild(asteroid);
-                } else {
-                    asteroid.style.left = `${asteroidX - 5}px`;
-
-                    // Collision detection
-                    if (
-                        asteroidX < 70 &&
-                        asteroidX > 20 &&
-                        spaceshipY < asteroid.offsetTop + 40 &&
-                        spaceshipY + 50 > asteroid.offsetTop
-                    ) {
-                        alert('Game Over! Final Score: ' + score);
-                        location.reload();
-                    }
-                }
-            }, 20);
-        }
-
-        function updateSpaceship() {
-            if (isTouching) {
-                velocity = thrust;
-            } else {
-                velocity += gravity;
+        document.addEventListener('keydown', (e) => {
+            if (e.code in keys) {
+                keys[e.code] = true;
             }
+        });
 
-            spaceshipY += velocity;
-            if (spaceshipY < 0) spaceshipY = 0;
-            if (spaceshipY > gameContainer.clientHeight - spaceship.clientHeight) spaceshipY = gameContainer.clientHeight - spaceship.clientHeight;
+        document.addEventListener('keyup', (e) => {
+            if (e.code in keys) {
+                keys[e.code] = false;
+            }
+        });
 
-            spaceship.style.top = `${spaceshipY}px`;
-        }
+        // Управление на мобильных устройствах
+        let mobileLeft = false;
+        let mobileRight = false;
 
-        function updateScore() {
-            score++;
-            scoreDisplay.innerText = `Score: ${score}`;
-        }
-
-        setInterval(updateSpaceship, 20);
-        setInterval(createAsteroid, 2000);
-        setInterval(updateScore, 1000);
-    </script>
-</body>
-</html>
+        leftButton.addEventListener('touchstart', (e)
