@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jumping Game</title>
+    <title>JumpMaster</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: #87CEEB;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #282c34;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
-            color: #fff;
+            color: #61dafb;
         }
 
         #gameContainer {
@@ -23,40 +23,65 @@
             height: 100%;
             position: relative;
             overflow: hidden;
-            background-color: #1e1e1e;
+            background: linear-gradient(to bottom, #1e1e1e, #282c34);
         }
 
         #player {
             width: 50px;
             height: 50px;
-            background-color: #FFD700;
+            background-color: #61dafb;
             position: absolute;
-            bottom: 20px;
+            bottom: 50px;
             left: 50px;
+            border-radius: 50%;
+            animation: idle 1s infinite;
+        }
+
+        @keyframes idle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         .obstacle {
             width: 30px;
-            height: 30px;
-            background-color: #FF6347;
+            height: 60px;
+            background-color: #ff6b6b;
             position: absolute;
-            bottom: 20px;
+            bottom: 50px;
+            border-radius: 10px;
         }
 
         #scoreDisplay {
             position: absolute;
             top: 20px;
             left: 20px;
-            font-size: 20px;
-            color: #000;
+            font-size: 24px;
+            color: #61dafb;
         }
 
         #livesDisplay {
             position: absolute;
             top: 20px;
             right: 20px;
-            font-size: 20px;
-            color: #000;
+            font-size: 24px;
+            color: #ff6b6b;
+        }
+
+        #dailyReward {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            color: #61dafb;
+        }
+
+        #powerUp {
+            width: 30px;
+            height: 30px;
+            background-color: #32cd32;
+            position: absolute;
+            border-radius: 50%;
         }
     </style>
 </head>
@@ -64,6 +89,7 @@
     <div id="gameContainer">
         <div id="scoreDisplay">Score: 0</div>
         <div id="livesDisplay">Lives: 10</div>
+        <div id="dailyReward">Daily Lives: +10</div>
         <div id="player"></div>
     </div>
 
@@ -72,34 +98,49 @@
         const player = document.getElementById('player');
         const scoreDisplay = document.getElementById('scoreDisplay');
         const livesDisplay = document.getElementById('livesDisplay');
+        const dailyReward = document.getElementById('dailyReward');
 
         let score = 0;
         let lives = 10;
         const speed = 5;
-        const jumpHeight = 100;
+        const jumpHeight = 150;
         const obstacleInterval = 1500;
         let isJumping = false;
+        let gameSpeed = 20;
         let accumulatedScore = localStorage.getItem('accumulatedScore') || 0;
         scoreDisplay.innerText = `Score: ${accumulatedScore}`;
+        lives = parseInt(localStorage.getItem('dailyLives')) || 10;
+        livesDisplay.innerText = `Lives: ${lives}`;
+
+        dailyReward.addEventListener('click', () => {
+            if (lives < 10) {
+                lives += 10;
+                livesDisplay.innerText = `Lives: ${lives}`;
+                localStorage.setItem('dailyLives', lives);
+            }
+        });
 
         function jump() {
             if (isJumping) return;
             isJumping = true;
+            player.style.animation = 'none';
+
             let jumpUp = setInterval(() => {
                 if (parseInt(player.style.bottom) < jumpHeight) {
                     player.style.bottom = `${parseInt(player.style.bottom) + 5}px`;
                 } else {
                     clearInterval(jumpUp);
                     let jumpDown = setInterval(() => {
-                        if (parseInt(player.style.bottom) > 20) {
+                        if (parseInt(player.style.bottom) > 50) {
                             player.style.bottom = `${parseInt(player.style.bottom) - 5}px`;
                         } else {
                             clearInterval(jumpDown);
                             isJumping = false;
+                            player.style.animation = 'idle 1s infinite';
                         }
-                    }, 20);
+                    }, gameSpeed);
                 }
-            }, 20);
+            }, gameSpeed);
         }
 
         function createObstacle() {
@@ -142,11 +183,45 @@
                         }
                     }
                 }
-            }, 20);
+            }, gameSpeed);
+        }
+
+        function createPowerUp() {
+            const powerUp = document.createElement('div');
+            powerUp.id = 'powerUp';
+            powerUp.style.left = `${gameContainer.clientWidth}px`;
+            powerUp.style.bottom = `${Math.random() * 150 + 50}px`;
+            gameContainer.appendChild(powerUp);
+
+            let moveInterval = setInterval(() => {
+                let playerRect = player.getBoundingClientRect();
+                let powerUpRect = powerUp.getBoundingClientRect();
+
+                if (powerUpRect.left < 0) {
+                    clearInterval(moveInterval);
+                    gameContainer.removeChild(powerUp);
+                } else {
+                    powerUp.style.left = `${powerUpRect.left - speed}px`;
+
+                    // Power-up collection
+                    if (
+                        powerUpRect.left < playerRect.right &&
+                        powerUpRect.right > playerRect.left &&
+                        powerUpRect.bottom > playerRect.top &&
+                        powerUpRect.top < playerRect.bottom
+                    ) {
+                        clearInterval(moveInterval);
+                        gameContainer.removeChild(powerUp);
+                        lives += 1;
+                        livesDisplay.innerText = `Lives: ${lives}`;
+                    }
+                }
+            }, gameSpeed);
         }
 
         document.addEventListener('touchstart', jump);
         setInterval(createObstacle, obstacleInterval);
+        setInterval(createPowerUp, 10000); // Generate a power-up every 10 seconds
     </script>
 </body>
 </html>
