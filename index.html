@@ -220,7 +220,7 @@
     <div id="content">Warehouse: This will display your warehouse information.</div>
 
     <div id="navbar">
-        <button class="nav-button" onclick="showTab('warehouse', this)">Slot</button>
+        <button class="nav-button" onclick="showTab('warehouse', this)">Warehouse</button>
         <button class="nav-button" onclick="showTab('tasks', this)">Tasks</button>
         <button class="nav-button" onclick="showTab('game', this)">Game</button>
         <button class="nav-button" onclick="showTab('market', this)">Market</button>
@@ -247,7 +247,7 @@
             button.classList.add('active');
 
             if (tab === 'warehouse') {
-                content.innerHTML = 
+                content.innerHTML = `
                     <div class="slot-machine">
                         <div class="balance-display">Balance: <span id="demoBalance">100.00 mBTC</span></div>
                         <div class="reels-container">
@@ -258,23 +258,23 @@
                         <button class="spin-button" onclick="spinReels()">Spin</button>
                         <button class="deposit-button" onclick="depositTON()">Deposit via TON</button>
                     </div>
-                ;
+                `;
                 updateDemoBalanceDisplay();
             } else if (tab === 'tasks') {
-                content.innerHTML = 
+                content.innerHTML = `
                     <div class="task-container">
                         <div class="task" id="inviteFriendTask" onclick="completeTask('inviteFriendTask')">
                             Invite a friend via Telegram (Reward: 5 Coins)
                         </div>
                     </div>
-                ;
+                `;
             } else if (tab === 'game') {
-                content.innerHTML = 
+                content.innerHTML = `
                     <div class="game-container">
                         <div class="game-box" onclick="jump()"></div>
                         <div class="game-message" id="gameMessage">Tap the square to make it jump!</div>
                     </div>
-                ;
+                `;
             } else if (tab === 'market') {
                 content.innerHTML = 'Market: Coming Soon';
             }
@@ -316,7 +316,7 @@
                 demoBalance += depositAmount;
                 localStorage.setItem('demoBalance', demoBalance);
                 updateDemoBalanceDisplay();
-                alert(Successfully deposited ${depositAmount} mBTC via TON.);
+                alert(`Successfully deposited ${depositAmount} mBTC via TON.`);
             } else {
                 alert("Invalid deposit amount.");
             }
