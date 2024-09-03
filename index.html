@@ -29,6 +29,14 @@
 
         #coinDisplay {
             font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        #coinDisplay img {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
         }
 
         #content {
@@ -60,6 +68,7 @@
             cursor: pointer;
             text-align: center;
             transition: color 0.3s, background-color 0.3s;
+            border-radius: 12px;
         }
 
         .nav-button:hover, .nav-button.active {
@@ -113,16 +122,19 @@
 
     <div id="header">
         <div>Mobile Game</div>
-        <div id="coinDisplay">Монеты: 0</div>
+        <div id="coinDisplay">
+            <img src="https://cdn-icons-png.flaticon.com/512/138/138315.png" alt="Coin">
+            <span id="coinCount">0</span>
+        </div>
     </div>
 
-    <div id="content">Склад: Здесь будет информация о вашем складе.</div>
+    <div id="content">Warehouse: This will display your warehouse information.</div>
 
     <div id="navbar">
-        <button class="nav-button" onclick="showTab('warehouse', this)">Склад</button>
-        <button class="nav-button" onclick="showTab('tasks', this)">Задания</button>
-        <button class="nav-button" onclick="showTab('game', this)">Игра</button>
-        <button class="nav-button" onclick="showTab('market', this)">Маркет</button>
+        <button class="nav-button" onclick="showTab('warehouse', this)">Warehouse</button>
+        <button class="nav-button" onclick="showTab('tasks', this)">Tasks</button>
+        <button class="nav-button" onclick="showTab('game', this)">Game</button>
+        <button class="nav-button" onclick="showTab('market', this)">Market</button>
         <button class="nav-button locked" disabled></button>
     </div>
 
@@ -130,7 +142,7 @@
         let coinCount = parseInt(localStorage.getItem('coins')) || 0;
 
         function updateCoinDisplay() {
-            document.getElementById('coinDisplay').innerText = `Монеты: ${coinCount}`;
+            document.getElementById('coinCount').innerText = coinCount;
         }
 
         function showTab(tab, button) {
@@ -141,18 +153,18 @@
             button.classList.add('active');
 
             if (tab === 'warehouse') {
-                content.innerHTML = 'Склад: Здесь будет информация о вашем складе.';
+                content.innerHTML = 'Warehouse: This will display your warehouse information.';
             } else if (tab === 'tasks') {
-                content.innerHTML = 'Задания: Здесь будут ваши задания.';
+                content.innerHTML = 'Tasks: This will display your tasks.';
             } else if (tab === 'game') {
                 content.innerHTML = `
                     <div class="game-container">
                         <div class="game-box" onclick="jump()"></div>
-                        <div class="game-message" id="gameMessage">Нажмите на квадрат, чтобы он подпрыгнул!</div>
+                        <div class="game-message" id="gameMessage">Tap the square to make it jump!</div>
                     </div>
                 `;
             } else if (tab === 'market') {
-                content.innerHTML = 'Маркет: Coming Soon';
+                content.innerHTML = 'Market: Coming Soon';
             }
         }
 
@@ -161,7 +173,7 @@
             gameBox.style.transform = 'translateY(-100px)';
             setTimeout(() => {
                 gameBox.style.transform = 'translateY(0)';
-                document.getElementById('gameMessage').innerText = 'Отлично!';
+                document.getElementById('gameMessage').innerText = 'Great!';
                 addCoin();
             }, 300);
         }
