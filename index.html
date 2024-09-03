@@ -116,6 +116,40 @@
             font-size: 16px;
             color: #0078d7;
         }
+
+        .task-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .task {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 80%;
+            padding: 10px;
+            border-radius: 12px;
+            background-color: #0078d7;
+            color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .task:hover {
+            background-color: #005fa3;
+        }
+
+        .task.completed {
+            background-color: #32a852;
+            cursor: default;
+        }
+
+        .task.completed:hover {
+            background-color: #32a852;
+        }
     </style>
 </head>
 <body>
@@ -155,7 +189,13 @@
             if (tab === 'warehouse') {
                 content.innerHTML = 'Warehouse: This will display your warehouse information.';
             } else if (tab === 'tasks') {
-                content.innerHTML = 'Tasks: This will display your tasks.';
+                content.innerHTML = `
+                    <div class="task-container">
+                        <div class="task" id="inviteFriendTask" onclick="completeTask('inviteFriendTask')">
+                            Invite a friend via Telegram (Reward: 5 Coins)
+                        </div>
+                    </div>
+                `;
             } else if (tab === 'game') {
                 content.innerHTML = `
                     <div class="game-container">
@@ -182,6 +222,24 @@
             coinCount++;
             localStorage.setItem('coins', coinCount);
             updateCoinDisplay();
+        }
+
+        function completeTask(taskId) {
+            const task = document.getElementById(taskId);
+
+            if (!task.classList.contains('completed')) {
+                if (taskId === 'inviteFriendTask') {
+                    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=Join%20me%20in%20this%20awesome%20game!`;
+                    window.open(telegramUrl, '_blank');
+
+                    coinCount += 5;
+                    localStorage.setItem('coins', coinCount);
+                    updateCoinDisplay();
+
+                    task.classList.add('completed');
+                    task.innerHTML = 'Task Completed! (+5 Coins)';
+                }
+            }
         }
 
         // Initialize the default tab and coin display
