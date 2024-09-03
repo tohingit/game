@@ -3,191 +3,343 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimalist Game</title>
+    <title>Mobile Interface</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            align-items: center;
             height: 100vh;
-            overflow: hidden;
+            background-color: #f7f7f7;
+            color: #333;
         }
 
-        #gameContainer {
-            width: 100%;
-            height: 60%;
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #0078d7;
+            color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #coinDisplay {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        #coinDisplay img {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+        }
+
+        #content {
+            flex-grow: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
-            background-color: #fff;
+            font-size: 18px;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
         }
 
-        #square {
-            width: 50px;
-            height: 50px;
-            background-color: #3498db;
-            position: absolute;
-            bottom: 20px;
-        }
-
-        #coinsDisplay {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 20px;
-            color: #555;
-        }
-
-        #bottomNav {
-            width: 100%;
-            height: 60px;
+        #navbar {
             display: flex;
             justify-content: space-around;
-            align-items: center;
-            background-color: #ddd;
-            border-top: 1px solid #ccc;
+            background-color: #ffffff;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .nav-button {
-            flex: 1;
-            height: 100%;
+            color: #555;
+            background-color: #ffffff;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            flex-grow: 1;
+            cursor: pointer;
+            text-align: center;
+            transition: color 0.3s, background-color 0.3s;
+            border-radius: 12px;
+        }
+
+        .nav-button:hover, .nav-button.active {
+            background-color: #0078d7;
+            color: #ffffff;
+        }
+
+        .nav-button:disabled {
+            color: #bbb;
+            background-color: #f0f0f0;
+            cursor: not-allowed;
+        }
+
+        .nav-button.locked {
+            position: relative;
+        }
+
+        .nav-button.locked::after {
+            content: '🔒';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #bbb;
+        }
+
+        .game-container {
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
+        }
+
+        .game-box {
+            width: 80px;
+            height: 80px;
+            background-color: #0078d7;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .game-message {
+            font-size: 16px;
+            color: #0078d7;
+        }
+
+        .task-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .task {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 80%;
+            padding: 10px;
+            border-radius: 12px;
+            background-color: #0078d7;
+            color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .task:hover {
+            background-color: #005fa3;
+        }
+
+        .task.completed {
+            background-color: #32a852;
+            cursor: default;
+        }
+
+        .task.completed:hover {
+            background-color: #32a852;
+        }
+
+        .slot-machine {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .reel {
+            width: 60px;
+            height: 60px;
+            background-color: #0078d7;
+            border-radius: 12px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .reels-container {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .spin-button {
+            padding: 10px 20px;
+            background-color: #32a852;
+            color: white;
+            border: none;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 18px;
-            color: #555;
         }
 
-        .nav-button.active {
-            background-color: #3498db;
-            color: #fff;
-            border-radius: 10px;
+        .spin-button:disabled {
+            background-color: #bbb;
+            cursor: not-allowed;
         }
 
-        #tabContent {
-            width: 100%;
-            height: 40%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #fff;
-            padding: 20px;
+        .balance-display {
+            margin-bottom: 10px;
+            font-size: 18px;
         }
 
-        #inviteButton {
+        .deposit-button {
             padding: 10px 20px;
-            background-color: #3498db;
-            color: #fff;
+            background-color: #0078d7;
+            color: white;
             border: none;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 16px;
-            border-radius: 5px;
         }
+
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <div id="coinsDisplay">Coins: 0</div>
-        <div id="square"></div>
+
+    <div id="header">
+        <div>Mobile Game</div>
+        <div id="coinDisplay">
+            <img src="https://cdn-icons-png.flaticon.com/512/138/138315.png" alt="Coin">
+            <span id="coinCount">0</span>
+        </div>
     </div>
 
-    <div id="tabContent">Content goes here...</div>
+    <div id="content">Warehouse: This will display your warehouse information.</div>
 
-    <div id="bottomNav">
-        <div class="nav-button active" onclick="showTab('warehouse', this)">Warehouse</div>
-        <div class="nav-button" onclick="showTab('tasks', this)">Tasks</div>
-        <div class="nav-button" onclick="showTab('game', this)">Game</div>
-        <div class="nav-button" onclick="showTab('market', this)">Market</div>
-        <div class="nav-button" onclick="showTab('locked', this)">Locked</div>
+    <div id="navbar">
+        <button class="nav-button" onclick="showTab('warehouse', this)">Warehouse</button>
+        <button class="nav-button" onclick="showTab('tasks', this)">Tasks</button>
+        <button class="nav-button" onclick="showTab('game', this)">Game</button>
+        <button class="nav-button" onclick="showTab('market', this)">Market</button>
+        <button class="nav-button locked" disabled></button>
     </div>
 
     <script>
-        let coins = parseInt(localStorage.getItem('coins')) || 0;
-        let isJumping = false;
-
-        const square = document.getElementById('square');
-        const coinsDisplay = document.getElementById('coinsDisplay');
+        let coinCount = parseInt(localStorage.getItem('coins')) || 0;
+        let demoBalance = parseFloat(localStorage.getItem('demoBalance')) || 100; // 100 mBTC
 
         function updateCoinDisplay() {
-            coinsDisplay.innerHTML = `<img src="coin.png" alt="Coin" style="width: 20px; height: 20px;"> ${coins}`;
+            document.getElementById('coinCount').innerText = coinCount;
+        }
+
+        function updateDemoBalanceDisplay() {
+            document.getElementById('demoBalance').innerText = demoBalance.toFixed(2) + ' mBTC';
+        }
+
+        function showTab(tab, button) {
+            const content = document.getElementById('content');
+            const buttons = document.querySelectorAll('.nav-button');
+
+            buttons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            if (tab === 'warehouse') {
+                content.innerHTML = `
+                    <div class="slot-machine">
+                        <div class="balance-display">Balance: <span id="demoBalance">100.00 mBTC</span></div>
+                        <div class="reels-container">
+                            <div class="reel" id="reel1">🍒</div>
+                            <div class="reel" id="reel2">🍋</div>
+                            <div class="reel" id="reel3">🍉</div>
+                        </div>
+                        <button class="spin-button" onclick="spinReels()">Spin</button>
+                        <button class="deposit-button" onclick="depositTON()">Deposit via TON</button>
+                    </div>
+                `;
+                updateDemoBalanceDisplay();
+            } else if (tab === 'tasks') {
+                content.innerHTML = `
+                    <div class="task-container">
+                        <div class="task" id="inviteFriendTask" onclick="completeTask('inviteFriendTask')">
+                            Invite a friend via Telegram (Reward: 5 Coins)
+                        </div>
+                    </div>
+                `;
+            } else if (tab === 'game') {
+                content.innerHTML = `
+                    <div class="game-container">
+                        <div class="game-box" onclick="jump()"></div>
+                        <div class="game-message" id="gameMessage">Tap the square to make it jump!</div>
+                    </div>
+                `;
+            } else if (tab === 'market') {
+                content.innerHTML = 'Market: Coming Soon';
+            }
+        }
+
+        function spinReels() {
+            if (demoBalance < 1) {
+                alert("Not enough balance to spin. Please deposit more mBTC.");
+                return;
+            }
+
+            demoBalance -= 1; // Cost of each spin is 1 mBTC
+            localStorage.setItem('demoBalance', demoBalance);
+            updateDemoBalanceDisplay();
+
+            const symbols = ['🍒', '🍋', '🍉', '🍇', '🍓'];
+            const reel1 = symbols[Math.floor(Math.random() * symbols.length)];
+            const reel2 = symbols[Math.floor(Math.random() * symbols.length)];
+            const reel3 = symbols[Math.floor(Math.random() * symbols.length)];
+
+            document.getElementById('reel1').innerText = reel1;
+            document.getElementById('reel2').innerText = reel2;
+            document.getElementById('reel3').innerText = reel3;
+
+            // Example: if all three reels match, give 10 mBTC
+            if (reel1 === reel2 && reel2 === reel3) {
+                demoBalance += 10;
+                alert("Congratulations! You won 10 mBTC!");
+                localStorage.setItem('demoBalance', demoBalance);
+                updateDemoBalanceDisplay();
+            }
+        }
+
+        function depositTON() {
+            // Simulate deposit using TON - This is just a placeholder for the actual integration
+            let depositAmount = prompt("Enter amount to deposit in mBTC:");
+            depositAmount = parseFloat(depositAmount);
+            if (!isNaN(depositAmount) && depositAmount > 0) {
+                demoBalance += depositAmount;
+                localStorage.setItem('demoBalance', demoBalance);
+                updateDemoBalanceDisplay();
+                alert(`Successfully deposited ${depositAmount} mBTC via TON.`);
+            } else {
+                alert("Invalid deposit amount.");
+            }
+        }
+
+        function completeTask(taskId) {
+            const taskElement = document.getElementById(taskId);
+            if (taskElement && !taskElement.classList.contains('completed')) {
+                coinCount += 5;
+                localStorage.setItem('coins', coinCount);
+                updateCoinDisplay();
+                taskElement.classList.add('completed');
+                taskElement.innerText = 'Task completed! Reward received.';
+            }
         }
 
         function jump() {
-            if (!isJumping) {
-                isJumping = true;
-                let jumpHeight = 100;
-                let jumpSpeed = 20;
-                let jumpCount = 0;
-
-                const jumpInterval = setInterval(() => {
-                    if (jumpCount < jumpHeight / jumpSpeed) {
-                        square.style.bottom = `${parseInt(square.style.bottom) + jumpSpeed}px`;
-                    } else {
-                        clearInterval(jumpInterval);
-                        const fallInterval = setInterval(() => {
-                            if (parseInt(square.style.bottom) > 20) {
-                                square.style.bottom = `${parseInt(square.style.bottom) - jumpSpeed}px`;
-                            } else {
-                                clearInterval(fallInterval);
-                                square.style.bottom = '20px';
-                                isJumping = false;
-                            }
-                        }, 20);
-                    }
-                    jumpCount++;
-                }, 20);
-
-                // Обновление счета за каждый прыжок
-                coins++;
-                localStorage.setItem('coins', coins);
-                updateCoinDisplay();
-            }
+            document.getElementById('gameMessage').innerText = 'Jumped!';
         }
 
-        square.addEventListener('touchstart', jump);
-        square.addEventListener('mousedown', jump);
-
-        function showTab(tab, button) {
-            document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-
-            const content = document.getElementById('tabContent');
-            if (tab === 'warehouse') {
-                content.innerHTML = `<p>Warehouse content...</p>`;
-            } else if (tab === 'tasks') {
-                content.innerHTML = `<p>Tasks content... <br><button id="inviteButton">Invite Friend</button></p>`;
-                document.getElementById('inviteButton').addEventListener('click', inviteFriend);
-            } else if (tab === 'game') {
-                content.innerHTML = `<p>Simple Jumping Game</p>`;
-            } else if (tab === 'market') {
-                content.innerHTML = `<p>Coming Soon</p>`;
-            } else if (tab === 'locked') {
-                content.innerHTML = `<p>Locked content...</p>`;
-            }
-        }
-
-        function inviteFriend() {
-            const telegramLink = 'https://t.me/share/url?url=https://yourgameurl.com&text=Join%20me%20in%20this%20awesome%20game!';
-            window.open(telegramLink, '_blank');
-
-            coins += 5;
-            localStorage.setItem('coins', coins);
-            updateCoinDisplay();
-
-            const inviteButton = document.getElementById('inviteButton');
-            inviteButton.style.backgroundColor = '#32CD32';
-            inviteButton.innerText = 'Invited!';
-        }
-
+        // Initialize the interface
         updateCoinDisplay();
-        showTab('warehouse', document.querySelector('.nav-button.active'));
+        showTab('warehouse', document.querySelector('.nav-button'));
     </script>
 </body>
 </html>
