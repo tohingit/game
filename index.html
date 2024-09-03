@@ -48,8 +48,9 @@
             transition: color 0.3s, background-color 0.3s;
         }
 
-        .nav-button:hover {
-            background-color: #f0f0f0;
+        .nav-button:hover, .nav-button.active {
+            background-color: #0078d7;
+            color: #ffffff;
         }
 
         .nav-button:disabled {
@@ -92,6 +93,12 @@
             font-size: 16px;
             color: #0078d7;
         }
+
+        #coinCount {
+            font-size: 20px;
+            color: #FFD700;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -99,16 +106,22 @@
     <div id="content">Склад: Здесь будет информация о вашем складе.</div>
 
     <div id="navbar">
-        <button class="nav-button" onclick="showTab('warehouse')">Склад</button>
-        <button class="nav-button" onclick="showTab('tasks')">Задания</button>
-        <button class="nav-button" onclick="showTab('game')">Игра</button>
-        <button class="nav-button" onclick="showTab('market')">Маркет</button>
+        <button class="nav-button" onclick="showTab('warehouse', this)">Склад</button>
+        <button class="nav-button" onclick="showTab('tasks', this)">Задания</button>
+        <button class="nav-button" onclick="showTab('game', this)">Игра</button>
+        <button class="nav-button" onclick="showTab('market', this)">Маркет</button>
         <button class="nav-button locked" disabled></button>
     </div>
 
     <script>
-        function showTab(tab) {
+        let coinCount = 0;
+
+        function showTab(tab, button) {
             const content = document.getElementById('content');
+            const buttons = document.querySelectorAll('.nav-button');
+
+            buttons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
 
             if (tab === 'warehouse') {
                 content.innerHTML = 'Склад: Здесь будет информация о вашем складе.';
@@ -117,6 +130,7 @@
             } else if (tab === 'game') {
                 content.innerHTML = `
                     <div class="game-container">
+                        <div id="coinCount">Монеты: ${coinCount}</div>
                         <div class="game-box" onclick="jump()"></div>
                         <div class="game-message" id="gameMessage">Нажмите на квадрат, чтобы он подпрыгнул!</div>
                     </div>
@@ -132,11 +146,17 @@
             setTimeout(() => {
                 gameBox.style.transform = 'translateY(0)';
                 document.getElementById('gameMessage').innerText = 'Отлично!';
+                addCoin();
             }, 300);
         }
 
+        function addCoin() {
+            coinCount++;
+            document.getElementById('coinCount').innerText = `Монеты: ${coinCount}`;
+        }
+
         // Initialize the default tab
-        showTab('warehouse');
+        showTab('warehouse', document.querySelector('.nav-button'));
     </script>
 </body>
 </html>
