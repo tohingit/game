@@ -17,6 +17,20 @@
             color: #333;
         }
 
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #0078d7;
+            color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #coinDisplay {
+            font-size: 18px;
+        }
+
         #content {
             flex-grow: 1;
             display: flex;
@@ -93,15 +107,14 @@
             font-size: 16px;
             color: #0078d7;
         }
-
-        #coinCount {
-            font-size: 20px;
-            color: #FFD700;
-            margin-bottom: 20px;
-        }
     </style>
 </head>
 <body>
+
+    <div id="header">
+        <div>Mobile Game</div>
+        <div id="coinDisplay">Монеты: 0</div>
+    </div>
 
     <div id="content">Склад: Здесь будет информация о вашем складе.</div>
 
@@ -114,7 +127,11 @@
     </div>
 
     <script>
-        let coinCount = 0;
+        let coinCount = parseInt(localStorage.getItem('coins')) || 0;
+
+        function updateCoinDisplay() {
+            document.getElementById('coinDisplay').innerText = `Монеты: ${coinCount}`;
+        }
 
         function showTab(tab, button) {
             const content = document.getElementById('content');
@@ -130,7 +147,6 @@
             } else if (tab === 'game') {
                 content.innerHTML = `
                     <div class="game-container">
-                        <div id="coinCount">Монеты: ${coinCount}</div>
                         <div class="game-box" onclick="jump()"></div>
                         <div class="game-message" id="gameMessage">Нажмите на квадрат, чтобы он подпрыгнул!</div>
                     </div>
@@ -152,11 +168,13 @@
 
         function addCoin() {
             coinCount++;
-            document.getElementById('coinCount').innerText = `Монеты: ${coinCount}`;
+            localStorage.setItem('coins', coinCount);
+            updateCoinDisplay();
         }
 
-        // Initialize the default tab
+        // Initialize the default tab and coin display
         showTab('warehouse', document.querySelector('.nav-button'));
+        updateCoinDisplay();
     </script>
 </body>
 </html>
