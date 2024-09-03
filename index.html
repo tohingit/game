@@ -95,64 +95,84 @@
             color: #bbb;
         }
 
-        .roulette-container {
+        .game-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .game-box {
+            width: 80px;
+            height: 80px;
+            background-color: #0078d7;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .game-message {
+            font-size: 16px;
+            color: #0078d7;
+        }
+
+        .task-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 20px;
         }
 
-        .wheel {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            border: 10px solid #0078d7;
-            position: relative;
-            overflow: hidden;
+        .task {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 80%;
+            padding: 10px;
+            border-radius: 12px;
+            background-color: #0078d7;
+            color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
 
-        .wheel .segment {
-            position: absolute;
-            width: 50%;
-            height: 50%;
-            background-color: #ffffff;
-            transform-origin: 100% 100%;
-            text-align: center;
-            line-height: 100px;
-            font-size: 16px;
-            color: #0078d7;
+        .task:hover {
+            background-color: #005fa3;
         }
 
-        .wheel .segment:nth-child(1) {
-            transform: rotate(0deg);
+        .task.completed {
+            background-color: #32a852;
+            cursor: default;
         }
 
-        .wheel .segment:nth-child(2) {
-            transform: rotate(45deg);
+        .task.completed:hover {
+            background-color: #32a852;
         }
 
-        .wheel .segment:nth-child(3) {
-            transform: rotate(90deg);
+        .slot-machine {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .wheel .segment:nth-child(4) {
-            transform: rotate(135deg);
+        .reel {
+            width: 60px;
+            height: 60px;
+            background-color: #0078d7;
+            border-radius: 12px;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: white;
         }
 
-        .wheel .segment:nth-child(5) {
-            transform: rotate(180deg);
-        }
-
-        .wheel .segment:nth-child(6) {
-            transform: rotate(225deg);
-        }
-
-        .wheel .segment:nth-child(7) {
-            transform: rotate(270deg);
-        }
-
-        .wheel .segment:nth-child(8) {
-            transform: rotate(315deg);
+        .reels-container {
+            display: flex;
+            margin-bottom: 20px;
         }
 
         .spin-button {
@@ -173,6 +193,16 @@
         .balance-display {
             margin-bottom: 10px;
             font-size: 18px;
+        }
+
+        .deposit-button {
+            padding: 10px 20px;
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
         }
 
     </style>
@@ -217,7 +247,7 @@
             button.classList.add('active');
 
             if (tab === 'warehouse') {
-                content.innerHTML = `
+                content.innerHTML = 
                     <div class="slot-machine">
                         <div class="balance-display">Balance: <span id="demoBalance">100.00 mBTC</span></div>
                         <div class="reels-container">
@@ -228,34 +258,23 @@
                         <button class="spin-button" onclick="spinReels()">Spin</button>
                         <button class="deposit-button" onclick="depositTON()">Deposit via TON</button>
                     </div>
-                `;
+                ;
                 updateDemoBalanceDisplay();
             } else if (tab === 'tasks') {
-                content.innerHTML = `
+                content.innerHTML = 
                     <div class="task-container">
                         <div class="task" id="inviteFriendTask" onclick="completeTask('inviteFriendTask')">
                             Invite a friend via Telegram (Reward: 5 Coins)
                         </div>
                     </div>
-                `;
+                ;
             } else if (tab === 'game') {
-                content.innerHTML = `
-                    <div class="roulette-container">
-                        <div class="balance-display">Balance: <span id="demoBalance">100.00 mBTC</span></div>
-                        <div class="wheel" id="wheel">
-                            <div class="segment">1</div>
-                            <div class="segment">2</div>
-                            <div class="segment">3</div>
-                            <div class="segment">4</div>
-                            <div class="segment">5</div>
-                            <div class="segment">6</div>
-                            <div class="segment">7</div>
-                            <div class="segment">8</div>
-                        </div>
-                        <button class="spin-button" onclick="spinWheel()">Spin the Wheel</button>
+                content.innerHTML = 
+                    <div class="game-container">
+                        <div class="game-box" onclick="jump()"></div>
+                        <div class="game-message" id="gameMessage">Tap the square to make it jump!</div>
                     </div>
-                `;
-                updateDemoBalanceDisplay();
+                ;
             } else if (tab === 'market') {
                 content.innerHTML = 'Market: Coming Soon';
             }
@@ -280,46 +299,47 @@
             document.getElementById('reel2').innerText = reel2;
             document.getElementById('reel3').innerText = reel3;
 
+            // Example: if all three reels match, give 10 mBTC
             if (reel1 === reel2 && reel2 === reel3) {
-                demoBalance += 10; // Winning gives 10 mBTC
+                demoBalance += 10;
+                alert("Congratulations! You won 10 mBTC!");
                 localStorage.setItem('demoBalance', demoBalance);
                 updateDemoBalanceDisplay();
-                alert("Congratulations! You won 10 mBTC!");
             }
         }
 
-        function spinWheel() {
-            const segments = ['1', '2', '3', '4', '5', '6', '7', '8'];
-            const winningSegment = segments[Math.floor(Math.random() * segments.length)];
-            alert(`The wheel landed on ${winningSegment}`);
-        }
-
         function depositTON() {
-            const depositAmount = parseFloat(prompt("Enter deposit amount in mBTC:"));
+            // Simulate deposit using TON - This is just a placeholder for the actual integration
+            let depositAmount = prompt("Enter amount to deposit in mBTC:");
+            depositAmount = parseFloat(depositAmount);
             if (!isNaN(depositAmount) && depositAmount > 0) {
                 demoBalance += depositAmount;
                 localStorage.setItem('demoBalance', demoBalance);
                 updateDemoBalanceDisplay();
-                alert(`${depositAmount} mBTC deposited successfully!`);
+                alert(Successfully deposited ${depositAmount} mBTC via TON.);
             } else {
                 alert("Invalid deposit amount.");
             }
         }
 
         function completeTask(taskId) {
-            if (taskId === 'inviteFriendTask') {
+            const taskElement = document.getElementById(taskId);
+            if (taskElement && !taskElement.classList.contains('completed')) {
                 coinCount += 5;
                 localStorage.setItem('coins', coinCount);
                 updateCoinDisplay();
-                document.getElementById(taskId).style.textDecoration = 'line-through';
-                document.getElementById(taskId).style.color = '#888';
-                document.getElementById(taskId).onclick = null;
-                alert("Task completed! You earned 5 coins.");
+                taskElement.classList.add('completed');
+                taskElement.innerText = 'Task completed! Reward received.';
             }
         }
 
-        updateCoinDisplay();
-    </script>
+        function jump() {
+            document.getElementById('gameMessage').innerText = 'Jumped!';
+        }
 
+        // Initialize the interface
+        updateCoinDisplay();
+        showTab('warehouse', document.querySelector('.nav-button'));
+    </script>
 </body>
 </html>
