@@ -3,132 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Falling Blocks</title>
+    <title>Mobile Interface</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background-color: #222;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        #content {
+            flex-grow: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        #gameContainer {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            background-color: #222;
-        }
-
-        #platform {
-            width: 100px;
-            height: 20px;
-            background-color: #fff;
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .block {
-            width: 20px;
-            height: 20px;
-            background-color: #ff6347;
-            position: absolute;
-            top: 0;
-        }
-
-        #scoreDisplay {
-            position: absolute;
-            top: 20px;
-            left: 20px;
             font-size: 24px;
-            color: #fff;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        #navbar {
+            display: flex;
+            justify-content: space-around;
+            background-color: #333;
+            padding: 10px 0;
+        }
+
+        .nav-button {
+            color: white;
+            background-color: #444;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            flex-grow: 1;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .nav-button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        .nav-button.locked {
+            background-color: #555;
+        }
+
+        .game-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .game-box {
+            width: 100px;
+            height: 100px;
+            background-color: #00aaff;
+            margin-bottom: 20px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <div id="scoreDisplay">Score: 0</div>
-        <div id="platform"></div>
+
+    <div id="content">Склад: Здесь будет информация о вашем складе.</div>
+
+    <div id="navbar">
+        <button class="nav-button" onclick="showTab('warehouse')">Склад</button>
+        <button class="nav-button" onclick="showTab('tasks')">Задания</button>
+        <button class="nav-button" onclick="showTab('game')">Игра</button>
+        <button class="nav-button" onclick="showTab('market')">Маркет</button>
+        <button class="nav-button locked" disabled>🔒</button>
     </div>
 
     <script>
-        const gameContainer = document.getElementById('gameContainer');
-        const platform = document.getElementById('platform');
-        const scoreDisplay = document.getElementById('scoreDisplay');
+        function showTab(tab) {
+            const content = document.getElementById('content');
 
-        let score = 0;
-        let isGameOver = false;
-        let platformPosition = gameContainer.clientWidth / 2 - 50;
-
-        function createBlock() {
-            if (isGameOver) return;
-
-            const block = document.createElement('div');
-            block.classList.add('block');
-            block.style.left = `${Math.random() * (gameContainer.clientWidth - 20)}px`;
-            gameContainer.appendChild(block);
-
-            let blockInterval = setInterval(() => {
-                const blockY = block.offsetTop;
-                const blockX = block.offsetLeft;
-
-                if (blockY > gameContainer.clientHeight - 40) {
-                    if (blockX > platformPosition && blockX < platformPosition + 100) {
-                        score++;
-                        scoreDisplay.innerText = `Score: ${score}`;
-                        clearInterval(blockInterval);
-                        gameContainer.removeChild(block);
-                    } else {
-                        alert('Game Over! Final Score: ' + score);
-                        isGameOver = true;
-                        location.reload();
-                    }
-                } else {
-                    block.style.top = `${blockY + 5}px`;
-                }
-            }, 20);
+            if (tab === 'warehouse') {
+                content.innerHTML = 'Склад: Здесь будет информация о вашем складе.';
+            } else if (tab === 'tasks') {
+                content.innerHTML = 'Задания: Здесь будут ваши задания.';
+            } else if (tab === 'game') {
+                content.innerHTML = `
+                    <div class="game-container">
+                        <div class="game-box" onclick="jump()">Нажми меня</div>
+                        <div id="gameMessage">Попробуй попасть в нужное место!</div>
+                    </div>
+                `;
+            } else if (tab === 'market') {
+                content.innerHTML = 'Маркет: Coming Soon';
+            }
         }
 
-        function movePlatform(direction) {
-            if (direction === 'left' && platformPosition > 0) {
-                platformPosition -= 20;
-            } else if (direction === 'right' && platformPosition < gameContainer.clientWidth - 100) {
-                platformPosition += 20;
-            }
-            platform.style.left = `${platformPosition}px`;
+        function jump() {
+            const gameBox = document.querySelector('.game-box');
+            gameBox.style.transform = 'translateY(-100px)';
+            setTimeout(() => {
+                gameBox.style.transform = 'translateY(0)';
+                document.getElementById('gameMessage').innerText = 'Отлично!';
+            }, 300);
         }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'ArrowLeft') {
-                movePlatform('left');
-            } else if (e.code === 'ArrowRight') {
-                movePlatform('right');
-            }
-        });
-
-        let touchStartX = 0;
-
-        document.addEventListener('touchstart', (e) => {
-            touchStartX = e.touches[0].clientX;
-        });
-
-        document.addEventListener('touchmove', (e) => {
-            const touchMoveX = e.touches[0].clientX;
-            if (touchMoveX < touchStartX) {
-                movePlatform('left');
-            } else if (touchMoveX > touchStartX) {
-                movePlatform('right');
-            }
-            touchStartX = touchMoveX;
-        });
-
-        setInterval(createBlock, 1000);
     </script>
 </body>
 </html>
