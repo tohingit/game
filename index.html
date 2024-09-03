@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mobile Interface</title>
     <style>
-        /* Стили остаются без изменений, за исключением кнопки депозита */
         body {
             margin: 0;
             padding: 0;
@@ -196,13 +195,6 @@
             font-size: 18px;
         }
 
-        .deposit-container {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
         .deposit-button {
             padding: 10px 20px;
             background-color: #0078d7;
@@ -211,7 +203,6 @@
             border-radius: 12px;
             cursor: pointer;
             font-size: 16px;
-            margin-top: 10px;
         }
 
     </style>
@@ -238,14 +229,14 @@
 
     <script>
         let coinCount = parseInt(localStorage.getItem('coins')) || 0;
-        let demoBalance = parseFloat(localStorage.getItem('demoBalance')) || 100; // 100 TON
+        let demoBalance = parseFloat(localStorage.getItem('demoBalance')) || 100; // 100 mBTC
 
         function updateCoinDisplay() {
             document.getElementById('coinCount').innerText = coinCount;
         }
 
         function updateDemoBalanceDisplay() {
-            document.getElementById('demoBalance').innerText = demoBalance.toFixed(2) + ' TON';
+            document.getElementById('demoBalance').innerText = demoBalance.toFixed(2) + ' mBTC';
         }
 
         function showTab(tab, button) {
@@ -258,16 +249,14 @@
             if (tab === 'warehouse') {
                 content.innerHTML = `
                     <div class="slot-machine">
-                        <div class="balance-display">Balance: <span id="demoBalance">100.00 TON</span></div>
+                        <div class="balance-display">Balance: <span id="demoBalance">100.00 mBTC</span></div>
                         <div class="reels-container">
                             <div class="reel" id="reel1">🍒</div>
                             <div class="reel" id="reel2">🍋</div>
                             <div class="reel" id="reel3">🍉</div>
                         </div>
                         <button class="spin-button" onclick="spinReels()">Spin</button>
-                        <div class="deposit-container">
-                            <button class="deposit-button" onclick="depositTON()">Deposit via TON</button>
-                        </div>
+                        <button class="deposit-button" onclick="depositTON()">Deposit via TON</button>
                     </div>
                 `;
                 updateDemoBalanceDisplay();
@@ -286,67 +275,71 @@
                         <div class="game-message" id="gameMessage">Tap the square to make it jump!</div>
                     </div>
                 `;
-        } else if (tab === 'market') {
-            content.innerHTML = 'Market is coming soon!';
+            } else if (tab === 'market') {
+                content.innerHTML = 'Market: Coming Soon';
+            }
         }
-    }
 
-    function spinReels() {
-        demoBalance -= 1; // Cost per spin
-        localStorage.setItem('demoBalance', demoBalance);
-        updateDemoBalanceDisplay();
+        function spinReels() {
+            if (demoBalance < 1) {
+                alert("Not enough balance to spin. Please deposit more mBTC.");
+                return;
+            }
 
-        const symbols = ['🍒', '🍋', '🍉', '🍇', '🍊'];
-        const reel1 = symbols[Math.floor(Math.random() * symbols.length)];
-        const reel2 = symbols[Math.floor(Math.random() * symbols.length)];
-        const reel3 = symbols[Math.floor(Math.random() * symbols.length)];
-
-        document.getElementById('reel1').innerText = reel1;
-        document.getElementById('reel2').innerText = reel2;
-        document.getElementById('reel3').innerText = reel3;
-
-        if (reel1 === reel2 && reel2 === reel3) {
-            demoBalance += 10;
-            alert("Congratulations! You won 10 TON!");
+            demoBalance -= 1; // Cost of each spin is 1 mBTC
             localStorage.setItem('demoBalance', demoBalance);
             updateDemoBalanceDisplay();
-        }
-    }
 
-    function depositTON() {
-        const depositAmount = prompt("Enter amount to deposit in TON:");
-        if (depositAmount !== null) {
-            const receiverAddress = prompt("Enter receiver wallet address (optional):");
+            const symbols = ['🍒', '🍋', '🍉', '🍇', '🍓'];
+            const reel1 = symbols[Math.floor(Math.random() * symbols.length)];
+            const reel2 = symbols[Math.floor(Math.random() * symbols.length)];
+            const reel3 = symbols[Math.floor(Math.random() * symbols.length)];
 
-            if (!isNaN(parseFloat(depositAmount)) && parseFloat(depositAmount) > 0) {
-                // Here, you would normally generate a real payment invoice via TON API
-                // This example only updates the balance directly for simplicity
-                demoBalance += parseFloat(depositAmount);
+            document.getElementById('reel1').innerText = reel1;
+            document.getElementById('reel2').innerText = reel2;
+            document.getElementById('reel3').innerText = reel3;
+
+            // Example: if all three reels match, give 10 mBTC
+            if (reel1 === reel2 && reel2 === reel3) {
+                demoBalance += 10;
+                alert("Congratulations! You won 10 mBTC!");
                 localStorage.setItem('demoBalance', demoBalance);
                 updateDemoBalanceDisplay();
-                alert(`Successfully deposited ${depositAmount} TON. (Note: Real implementation requires TON API)`);
+            }
+        }
+
+        function depositTON() {
+            // Simulate deposit using TON - This is just a placeholder for the actual integration
+            let depositAmount = prompt("Enter amount to deposit in mBTC:");
+            depositAmount = parseFloat(depositAmount);
+            if (!isNaN(depositAmount) && depositAmount > 0) {
+                demoBalance += depositAmount;
+                localStorage.setItem('demoBalance', demoBalance);
+                updateDemoBalanceDisplay();
+                alert(`Successfully deposited ${depositAmount} mBTC via TON.`);
             } else {
                 alert("Invalid deposit amount.");
             }
         }
-    }
 
-    function completeTask(taskId) {
-        const taskElement = document.getElementById(taskId);
-        if (taskElement && !taskElement.classList.contains('completed')) {
-            coinCount += 5;
-            localStorage.setItem('coins', coinCount);
-            updateCoinDisplay();
-            taskElement.classList.add('completed');
-            taskElement.innerText = 'Task completed! Reward received.';
+        function completeTask(taskId) {
+            const taskElement = document.getElementById(taskId);
+            if (taskElement && !taskElement.classList.contains('completed')) {
+                coinCount += 5;
+                localStorage.setItem('coins', coinCount);
+                updateCoinDisplay();
+                taskElement.classList.add('completed');
+                taskElement.innerText = 'Task completed! Reward received.';
+            }
         }
-    }
 
-    function jump() {
-        document.getElementById('gameMessage').innerText = 'Jumped!';
-    }
+        function jump() {
+            document.getElementById('gameMessage').innerText = 'Jumped!';
+        }
 
-    // Initialize the interface
-    updateCoinDisplay();
-    showTab('warehouse', document.querySelector('.nav-button'));
-</script>
+        // Initialize the interface
+        updateCoinDisplay();
+        showTab('warehouse', document.querySelector('.nav-button'));
+    </script>
+</body>
+</html>
