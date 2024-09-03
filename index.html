@@ -3,248 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile Interface</title>
+    <title>Minimalist Game</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            align-items: center;
             height: 100vh;
-            background-color: #f7f7f7;
-            color: #333;
+            overflow: hidden;
         }
 
-        #header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: #0078d7;
-            color: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        #coinDisplay {
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-        }
-
-        #coinDisplay img {
-            width: 24px;
-            height: 24px;
-            margin-right: 8px;
-        }
-
-        #content {
-            flex-grow: 1;
+        #gameContainer {
+            width: 100%;
+            height: 60%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 18px;
-            padding: 20px;
-            box-sizing: border-box;
-            text-align: center;
+            position: relative;
+            background-color: #fff;
         }
 
-        #navbar {
+        #square {
+            width: 50px;
+            height: 50px;
+            background-color: #3498db;
+            position: absolute;
+            bottom: 20px;
+        }
+
+        #coinsDisplay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 20px;
+            color: #555;
+        }
+
+        #bottomNav {
+            width: 100%;
+            height: 60px;
             display: flex;
             justify-content: space-around;
-            background-color: #ffffff;
-            padding: 10px 0;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            align-items: center;
+            background-color: #ddd;
+            border-top: 1px solid #ccc;
         }
 
         .nav-button {
-            color: #555;
-            background-color: #ffffff;
-            border: none;
-            padding: 10px;
-            font-size: 16px;
-            flex-grow: 1;
-            cursor: pointer;
-            text-align: center;
-            transition: color 0.3s, background-color 0.3s;
-            border-radius: 12px;
-        }
-
-        .nav-button:hover, .nav-button.active {
-            background-color: #0078d7;
-            color: #ffffff;
-        }
-
-        .nav-button:disabled {
-            color: #bbb;
-            background-color: #f0f0f0;
-            cursor: not-allowed;
-        }
-
-        .nav-button.locked {
-            position: relative;
-        }
-
-        .nav-button.locked::after {
-            content: '🔒';
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #bbb;
-        }
-
-        .game-container {
+            flex: 1;
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
-        }
-
-        .game-box {
-            width: 80px;
-            height: 80px;
-            background-color: #0078d7;
-            margin-bottom: 20px;
-            border-radius: 12px;
             cursor: pointer;
-            transition: transform 0.3s;
+            font-size: 18px;
+            color: #555;
         }
 
-        .game-message {
+        .nav-button.active {
+            background-color: #3498db;
+            color: #fff;
+            border-radius: 10px;
+        }
+
+        #tabContent {
+            width: 100%;
+            height: 40%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+            padding: 20px;
+        }
+
+        #inviteButton {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            cursor: pointer;
             font-size: 16px;
-            color: #0078d7;
-        }
-
-        .task-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .task {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 80%;
-            padding: 10px;
-            border-radius: 12px;
-            background-color: #0078d7;
-            color: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .task:hover {
-            background-color: #005fa3;
-        }
-
-        .task.completed {
-            background-color: #32a852;
-            cursor: default;
-        }
-
-        .task.completed:hover {
-            background-color: #32a852;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-
-    <div id="header">
-        <div>Mobile Game</div>
-        <div id="coinDisplay">
-            <img src="https://cdn-icons-png.flaticon.com/512/138/138315.png" alt="Coin">
-            <span id="coinCount">0</span>
-        </div>
+    <div id="gameContainer">
+        <div id="coinsDisplay">Coins: 0</div>
+        <div id="square"></div>
     </div>
 
-    <div id="content">Warehouse: This will display your warehouse information.</div>
+    <div id="tabContent">Content goes here...</div>
 
-    <div id="navbar">
-        <button class="nav-button" onclick="showTab('warehouse', this)">Warehouse</button>
-        <button class="nav-button" onclick="showTab('tasks', this)">Tasks</button>
-        <button class="nav-button" onclick="showTab('game', this)">Game</button>
-        <button class="nav-button" onclick="showTab('market', this)">Market</button>
-        <button class="nav-button locked" disabled></button>
+    <div id="bottomNav">
+        <div class="nav-button active" onclick="showTab('warehouse', this)">Warehouse</div>
+        <div class="nav-button" onclick="showTab('tasks', this)">Tasks</div>
+        <div class="nav-button" onclick="showTab('game', this)">Game</div>
+        <div class="nav-button" onclick="showTab('market', this)">Market</div>
+        <div class="nav-button" onclick="showTab('locked', this)">Locked</div>
     </div>
 
     <script>
-        let coinCount = parseInt(localStorage.getItem('coins')) || 0;
+        let coins = parseInt(localStorage.getItem('coins')) || 0;
+        let isJumping = false;
+
+        const square = document.getElementById('square');
+        const coinsDisplay = document.getElementById('coinsDisplay');
 
         function updateCoinDisplay() {
-            document.getElementById('coinCount').innerText = coinCount;
-        }
-
-        function showTab(tab, button) {
-            const content = document.getElementById('content');
-            const buttons = document.querySelectorAll('.nav-button');
-
-            buttons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-
-            if (tab === 'warehouse') {
-                content.innerHTML = 'Warehouse: This will display your warehouse information.';
-            } else if (tab === 'tasks') {
-                content.innerHTML = `
-                    <div class="task-container">
-                        <div class="task" id="inviteFriendTask" onclick="completeTask('inviteFriendTask')">
-                            Invite a friend via Telegram (Reward: 5 Coins)
-                        </div>
-                    </div>
-                `;
-            } else if (tab === 'game') {
-                content.innerHTML = `
-                    <div class="game-container">
-                        <div class="game-box" onclick="jump()"></div>
-                        <div class="game-message" id="gameMessage">Tap the square to make it jump!</div>
-                    </div>
-                `;
-            } else if (tab === 'market') {
-                content.innerHTML = 'Market: Coming Soon';
-            }
+            coinsDisplay.innerHTML = `<img src="coin.png" alt="Coin" style="width: 20px; height: 20px;"> ${coins}`;
         }
 
         function jump() {
-            const gameBox = document.querySelector('.game-box');
-            gameBox.style.transform = 'translateY(-100px)';
-            setTimeout(() => {
-                gameBox.style.transform = 'translateY(0)';
-                document.getElementById('gameMessage').innerText = 'Great!';
-                addCoin();
-            }, 300);
-        }
+            if (!isJumping) {
+                isJumping = true;
+                let jumpHeight = 100;
+                let jumpSpeed = 20;
+                let jumpCount = 0;
 
-        function addCoin() {
-            coinCount++;
-            localStorage.setItem('coins', coinCount);
-            updateCoinDisplay();
-        }
+                const jumpInterval = setInterval(() => {
+                    if (jumpCount < jumpHeight / jumpSpeed) {
+                        square.style.bottom = `${parseInt(square.style.bottom) + jumpSpeed}px`;
+                    } else {
+                        clearInterval(jumpInterval);
+                        const fallInterval = setInterval(() => {
+                            if (parseInt(square.style.bottom) > 20) {
+                                square.style.bottom = `${parseInt(square.style.bottom) - jumpSpeed}px`;
+                            } else {
+                                clearInterval(fallInterval);
+                                square.style.bottom = '20px';
+                                isJumping = false;
+                            }
+                        }, 20);
+                    }
+                    jumpCount++;
+                }, 20);
 
-        function completeTask(taskId) {
-            const task = document.getElementById(taskId);
-
-            if (!task.classList.contains('completed')) {
-                if (taskId === 'inviteFriendTask') {
-                    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=Join%20me%20in%20this%20awesome%20game!`;
-                    window.open(telegramUrl, '_blank');
-
-                    coinCount += 5;
-                    localStorage.setItem('coins', coinCount);
-                    updateCoinDisplay();
-
-                    task.classList.add('completed');
-                    task.innerHTML = 'Task Completed! (+5 Coins)';
-                }
+                // Обновление счета за каждый прыжок
+                coins++;
+                localStorage.setItem('coins', coins);
+                updateCoinDisplay();
             }
         }
 
-        // Initialize the default tab and coin display
-        showTab('warehouse', document.querySelector('.nav-button'));
+        square.addEventListener('touchstart', jump);
+        square.addEventListener('mousedown', jump);
+
+        function showTab(tab, button) {
+            document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            const content = document.getElementById('tabContent');
+            if (tab === 'warehouse') {
+                content.innerHTML = `<p>Warehouse content...</p>`;
+            } else if (tab === 'tasks') {
+                content.innerHTML = `<p>Tasks content... <br><button id="inviteButton">Invite Friend</button></p>`;
+                document.getElementById('inviteButton').addEventListener('click', inviteFriend);
+            } else if (tab === 'game') {
+                content.innerHTML = `<p>Simple Jumping Game</p>`;
+            } else if (tab === 'market') {
+                content.innerHTML = `<p>Coming Soon</p>`;
+            } else if (tab === 'locked') {
+                content.innerHTML = `<p>Locked content...</p>`;
+            }
+        }
+
+        function inviteFriend() {
+            const telegramLink = 'https://t.me/share/url?url=https://yourgameurl.com&text=Join%20me%20in%20this%20awesome%20game!';
+            window.open(telegramLink, '_blank');
+
+            coins += 5;
+            localStorage.setItem('coins', coins);
+            updateCoinDisplay();
+
+            const inviteButton = document.getElementById('inviteButton');
+            inviteButton.style.backgroundColor = '#32CD32';
+            inviteButton.innerText = 'Invited!';
+        }
+
         updateCoinDisplay();
+        showTab('warehouse', document.querySelector('.nav-button.active'));
     </script>
 </body>
 </html>
